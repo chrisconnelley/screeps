@@ -17,27 +17,29 @@ var towers = {
 
   },
   towerAttack: function(tower) {
-    console.log("towerAttack (" + tower + ")");
-    // For this tower, find all the damaged structures in the room and repair the first one
-    
+    // For this tower, find all the hostile creeps in the room and attack the first one
 
     var attackTargets = tower.room.find(FIND_HOSTILE_CREEPS);
 
-    tower.attack(attackTargets[0]);
+    if (attackTargets.length > 0) {
+      console.log("towerAttack (" + tower + ") attacking hostile creep: " + attackTargets[0]);
+      tower.attack(attackTargets[0]);
+    }
   },
   towerRepair: function(tower) {
-    console.log("towerRepair (" + tower + ")");
     // For this tower, find all the damaged structures in the room and repair the first one
     
-
     var repairTargets = tower.room.find(FIND_STRUCTURES, {
       filter: (structure) => {
         return structure.structureType == STRUCTURE_CONTAINER &&
-          structure.hits < structure.hitsMax*amountRepairMax;
+        structure.hits < structure.hitsMax*amountRepairMax;
       }
     });
-
-    tower.repair(repairTargets[0]);
+    
+    if (repairTargets.length > 0) {
+      console.log("towerRepair (" + tower + ") repairing structure: " + repairTargets[0]);
+      tower.repair(repairTargets[0]);
+    }
   }
 }
 

@@ -38,12 +38,16 @@ var shared = {
     var energyClosestFound = null;
     
     energyClosestFound = shared.findAssignedSource(creep);
-    if (energyClosestFound) return energyClosestFound;
+    if (energyClosestFound) 
+    {
+      // console.log("Using assigned source " + energyClosestFound);
+      return energyClosestFound;
+    }
 
     if (creep.memory.role !== 'harvester') {
       var containers = creep.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
-          return (structure.structureType == STRUCTURE_CONTAINER &&
+          return ((structure.structureType == STRUCTURE_STORAGE)&&
             structure.store.energy > 0)
         }
       });

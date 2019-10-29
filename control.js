@@ -1,6 +1,19 @@
 var util = require('util');
+var roleLoader = require('role.loader');
 
 var control = {
+  commandCreep(nameCreep, command) {
+    var creep = Game.creeps[nameCreep];
+    var nameRole = creep.memory.role;
+    nameRole = nameRole.toUpperCase().substring(0,1) + nameRole.slice(1);
+    var jsEval = 'roleLoader.controlCommand("' + nameCreep + '", "'+ command +'");';
+
+    console.log(jsEval);
+    eval(jsEval);
+  },
+  echo: function(message) {
+    return message;
+  },
   assignRoleAllCreeps: function (role) {
     for (var nameCreep in Memory.creeps) {
       if (Game.creeps[nameCreep]) {
@@ -10,6 +23,18 @@ var control = {
     }
 
     return true;
+  },
+  reassignRole: function(roleSource, roleDestination) {
+    for (var nameCreep in Memory.creeps) {
+      var creep = Game.creeps[nameCreep];
+      if (creep) {
+        if (creep.memory.role === roleSource) {
+          control.assignRole(creep.name, roleDestination);
+        };
+      }
+    }
+
+    return OK;
   },
   assignSource: function (nameCreep, sourceId) {
     var creep = Game.creeps[nameCreep];

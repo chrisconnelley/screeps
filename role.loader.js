@@ -2,11 +2,22 @@ var utilMemory = require('util.memory');
 
 var roleLoader = {
   /* memory:
-    consumer: name of Spawn
+    consumers: array of ids of Spawn/extensions
     idSource: id of source Structure
     stage: loading or unloading
+    isRecharging: true
   */
-  displayBadge: function (creep) {
+  echo: function(nameCreep, message) {
+    var creep = Game.creeps[nameCreep];
+    creep.say(message);
+    return message;
+  },
+  controlCommand: function(nameCreep, command) {
+    console.log("controlCommand" + command);
+    eval(command); // uses nameCreep
+  },
+  displayBadge: function (nameCreep) {
+    var creep = Game.creeps[nameCreep];
     creep.room.visual.text('L', creep.pos, {
       color: '#FF0000',
       font: '10px',
@@ -14,41 +25,154 @@ var roleLoader = {
     })
   },
   run: function (creep) {
-    roleLoader.displayBadge(creep);
+    this.runInternal(creep.name); 
+  },
+  isSetup: function(nameCreep) {
+    var isSetup = true;
 
-    if (utilMemory.hasMemory(creep, 'consumer') &&
-        utilMemory.hasMemory(store, 'store')) {
-          perform(creep);
-    } else {
-      console.log("Loader needs both consumer and store assigned.");
+    var creep = Game.creeps[nameCreep];
+    if (!utilMemory.hasMemory(creep, 'consumer')) {
+      console.log("Loader (" + nameCreep + ") needs consumer assigned.");
+      isSetup = false;
+    } 
+
+    if (!utilMemory.hasMemory(creep, 'source')) {
+       console.log("Loader (" + nameCreep + ") needs source assigned.");
+      isSetup = false;
     }
+
+    return isSetup;
   },
-  perform: function(creep) {
-    var consumer = this.consumer(creep);
-    var source = this.source(creep);
+  runInternal: function(nameCreep) {
+    roleLoader.displayBadge(nameCreep);
+    var creep = Game.creeps[nameCreep];
+
+    if (!utilMemory.hasMemory(creep, 'home_roomName')) {
+      console.log("Loader (" + nameCreep + ") needs home assigned.");
+      return;
+    }
+
+    var isHome = creep.pos.isEqualTo(this.home(nameCreep));
+    // console.log(nameCreep + " isHome? " + isHome);
+    
+    if (!isHome) {
+      // check if we really are home
+      // if (creep.pos.isEqualTo(this.home(nameCreep))) {
+      //   console.log(creep.pos + " " + this.home(nameCreep));
+      //   this.assign_isHome(nameCreep, true);
+      // } else {
+        creep.moveTo(this.home(nameCreep), {
+            visualizePathStyle: {
+              stroke: '#FFFFFF'
+            }
+        });
+      // }
+    }    
+
+    if (!this.isSetup(nameCreep)) return;
+
+    this.perform(nameCreep);
+  },
+  perform: function(nameCreep) {
+    var creep = Game.creeps[nameCreep];
+    var consumer;
+    var source = this.source(nameCreep);
     var hasSourceEnergy = source.store.energy > 0;
-    var doesConsumerNeedEnergy = consumer.store.energy < consumer.store.getCapacity('energy');
+    var doesConsumerNeedEnergy = false; 
 
-    console.log("hasSourceEnergy? " + hasSourceEnergy + " doesConsumerNeedEnergy? " + doesConsumerNeedEnergy);
+    var countConsumers = this.consumers_length(nameCreep);
+
+    for (var i=0; i < countConsumers; i++) {
+      consumer = this.consumer(nameCreep, i);
+      // console.log(nameCreep + " consumer: " + consumer);
+      if (consumer === undefined || consumer.store === undefined) continue;
+      doesConsumerNeedEnergy = consumer.store.energy < consumer.store.getCapacity('energy');
+      if (doesConsumerNeedEnergy) break;
+    }
+
+    // console.log(nameCreep + " hasSourceEnergy? " + hasSourceEnergy + " doesConsumerNeedEnergy? " + doesConsumerNeedEnergy);
+
+    if (hasSourceEnergy && doesConsumerNeedEnergy) {
+      if (this.stage(nameCreep) === undefined) {
+        this.assign_stage(nameCreep, 'loading');  
+      }
+
+      var stage = this.stage(nameCreep);
+
+      if (stage === 'loading') {
+        creep.say("!!");
+        var result = creep.withdraw(source, RESOURCE_ENERGY);
+        this.assign_stage(nameCreep, 'unloading'); 
+        console.log(nameCreep +  " loading " + result + " " + stage);
+      }
+      else {
+        var result = creep.transfer(consumer, RESOURCE_ENERGY);
+        this.assign_stage(nameCreep, 'loading');  
+      }
+    }
 
   },
-  consumer: function (creep) {
-    return utilMemory.getObject(creep, 'consumer');
+  consumer: function(nameCreep, index) {
+    var creep = Game.creeps[nameCreep];
+    var idsConsumers = utilMemory.getArray(creep, 'consumer');
+    // console.log("idsConsumers: " + idsConsumers[index]);
+    return Game.getObjectById(idsConsumers[index]);
   },
-  source: function (creep) {
+  consumers_length: function(nameCreep) {
+    var creep = Game.creeps[nameCreep];
+    var idsConsumers = utilMemory.getArray(creep, 'consumer');
+    return idsConsumers.length;
+  },
+  source: function (nameCreep) {
+    var creep = Game.creeps[nameCreep];
     return utilMemory.getObject(creep, 'source');
   },
-  stage: function (creep) {
+  stage: function (nameCreep) {
+    var creep = Game.creeps[nameCreep];
     return utilMemory.getString(creep, 'stage');
   },
-  assign_Consumer(creep, idConsumer) {
-    utilMemory.remember(creep, 'consumer', idConsumer);
+  isHome: function(nameCreep) {
+    var creep = Game.creeps[nameCreep];
+    return utilMemory.getBoolean(creep, 'isHome');
   },
-  assign_Source(creep, idSource) {
+  home: function(nameCreep) {
+    var creep = Game.creeps[nameCreep];
+    var x = utilMemory.getInt(creep, 'home_x');
+    var y = utilMemory.getInt(creep, 'home_y');
+    var nameRoom = utilMemory.getString(creep, 'home_roomName');
+
+    return new RoomPosition(x, y, nameRoom);
+  },
+  add_consumer(nameCreep, idConsumer) {
+    var creep = Game.creeps[nameCreep];
+    utilMemory.rememberInArray(creep, 'consumer', idConsumer);
+  },
+  remove_consumer(nameCreep, idConsumer) {
+    var creep = Game.creeps[nameCreep];
+    utilMemory.forgetInArray(creep, 'consumer', idConsumer);
+  },
+  removeConsumerByIndex(nameCreep, index) {
+    var creep = Game.creeps[nameCreep];
+    utilMemory.forgetInArrayByIndex(creep, 'consumer', index);
+  },
+  assign_source(nameCreep, idSource) {
+    var creep = Game.creeps[nameCreep];
     utilMemory.remember(creep, 'source', idSource);
   },
-  assign_Stage(creep, stage) {
+  assign_stage(nameCreep, stage) {
+    var creep = Game.creeps[nameCreep];
     utilMemory.remember(creep, 'stage', stage);
+  },
+  assign_home(nameCreep, x, y, roomName) {
+    var creep = Game.creeps[nameCreep];
+    utilMemory.remember(creep, 'home_x', x);
+    utilMemory.remember(creep, 'home_y', y);
+    utilMemory.remember(creep, 'home_roomName', roomName);
+    this.assign_isHome(nameCreep, false);
+  },
+  assign_isHome(nameCreep, isHome) {
+    var creep = Game.creeps[nameCreep];
+    utilMemory.remember(creep, 'isHome', isHome);
   }
 };
 

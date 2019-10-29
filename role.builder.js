@@ -4,11 +4,11 @@ var roleBuilder = {
   run: function (creep) {
     if (creep.memory.building && creep.carry.energy == 0) {
       creep.memory.building = false;
-      creep.say('🔄 harvest');
+      // creep.say('🔄 harvest');
     }
     if (!creep.memory.building && creep.carry.energy == creep.carryCapacity) {
       creep.memory.building = true;
-      creep.say('🚧 build');
+      // creep.say('🚧 build');
     }
 
     if (creep.memory.building) {
@@ -24,6 +24,7 @@ var roleBuilder = {
       }
     } else {
       var closest_energy = shared.findClosestEnergy(creep);
+      // console.log("Builder - Gathering (" + closest_energy + ")");
       var resultGather = shared.gatherEnergy(creep, closest_energy);
       
       if (resultGather == ERR_NOT_IN_RANGE) {

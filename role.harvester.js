@@ -31,7 +31,9 @@ var roleHarvester = {
   depositResource(creep) {
     containers = Game.spawns['Spawn1'].room.find(FIND_STRUCTURES, {
       filter: (structure) => {
-        return (structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity() > 0);
+        return ((structure.structureType == STRUCTURE_CONTAINER || 
+          structure.structureType == STRUCTURE_STORAGE
+          ) && structure.store.getFreeCapacity() > 0);
       }
     });
 
@@ -78,9 +80,10 @@ var roleHarvester = {
         });
       }
     } else {
-      var targets = Game.spawns['Spawn1'].room.find(FIND_STRUCTURES, {
+      var targets = [];
+      targets = Game.spawns['Spawn1'].room.find(FIND_STRUCTURES, {
         filter: (structure) => {
-          return (structure.structureType == STRUCTURE_EXTENSION ||
+          return (
             structure.structureType == STRUCTURE_SPAWN ||
             structure.structureType == STRUCTURE_TOWER) && structure.energy < structure.energyCapacity;
         }
@@ -99,16 +102,19 @@ var roleHarvester = {
       //   So, instead deposit it in a container.
       if (targets.length == 0) {
         // console.log("Spawn, extensions, and tower are full. Looking for containers.");
-        targets = Game.spawns['Spawn1'].room.find(FIND_STRUCTURES, {
+        var targetsStores = Game.spawns['Spawn1'].room.find(FIND_STRUCTURES, {
           filter: (structure) => {
-            return (structure.structureType == STRUCTURE_CONTAINER && structure.store.getFreeCapacity() > 0);
+            return ((structure.structureType == STRUCTURE_CONTAINER || 
+              structure.structureType == STRUCTURE_STORAGE
+              ) && structure.store.getFreeCapacity() > 0);  
           }
         });
 
-        if (targets.length === 0) {
+        if (targetsStores.length === 0) {
           console.log("All containers are full!");
+        } else {
+          closest_target = targetsStores[0];
         }
-        closest_target = targets[0];
       }
 
       if (closest_target) {

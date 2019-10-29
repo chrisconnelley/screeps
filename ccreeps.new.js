@@ -1,6 +1,6 @@
-const countDesiredHarvesters = 6;
-const countDesiredUpgraders = 1;
-const countDesiredBuilders = 4;
+const countDesiredHarvesters = 8;
+const countDesiredUpgraders = 4;
+const countDesiredBuilders = 0;
 
 const quiet = false;
 const shouldMakeCreeps = false;
@@ -10,7 +10,7 @@ const workerSchemas = {
   250: [MOVE, MOVE, CARRY, WORK],
   400: [MOVE, MOVE, MOVE, CARRY, WORK, WORK],
   550: [MOVE, MOVE, MOVE, MOVE, CARRY, WORK, WORK, WORK],
-  700: [MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, WORK, WORK, WORK, WORK],
+  700: [MOVE, MOVE, MOVE, MOVE, CARRY, WORK, WORK, WORK, WORK],
   850: [MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, WORK, WORK, WORK, WORK, WORK],
   1000: [MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, WORK, WORK, WORK, WORK, WORK, WORK],
   1150: [MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, WORK, WORK, WORK, WORK, WORK, WORK, WORK],
@@ -24,11 +24,14 @@ var ccreepsNew = {
 
     var energyAvailable = spawnRoom.room.energyAvailable;
     var energyMax = spawnRoom.room.energyCapacityAvailable;
-    let schemaCostMax = energyMax >= 700 ? 700 : energyMax;
+    let schemaCostMax = 1000;
+    schemaCostMax = energyMax >= schemaCostMax ? schemaCostMax : energyMax;
 
     var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role == 'harvester');
     var upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader');
     var builders = _.filter(Game.creeps, (creep) => creep.memory.role == 'builder');
+    var loaders = _.filter(Game.creeps, (creep) => creep.memory.role == 'loader');
+
 
     if (harvesters.length === 0) schemaCostMax = 250;
 
@@ -137,6 +140,8 @@ var ccreepsNew = {
       console.log('Builders: ' + displayNames(builders));
       result.push('Upgraders: ' + upgraders.length + "/" + countDesiredUpgraders);
       console.log('Upgraders: ' + displayNames(upgraders));
+      result.push('Loaders: ' + loaders.length);
+      console.log('Loaders: ' + displayNames(loaders));
       console.log();
       result.push('Schema Cost: ' + schemaCostMatch);
 

@@ -1,4 +1,5 @@
 const amountRepairMax = 0.9; // 90% of max
+const amountWallHPDesired = 10000;
 
 var towers = {
   run: function(nameSpawn) {
@@ -12,23 +13,41 @@ var towers = {
       }
     });
 
-    // towers.forEach((tower) => this.towerRepair(tower))
+    towers.forEach((tower) => this.towerRepairContainers(tower));
+    towers.forEach((tower) => this.towerRepairWalls(tower));
+    towers.forEach((tower) => this.towerRepairRamparts(tower));
     towers.forEach((tower) => this.towerAttack(tower));
+    towers.forEach((tower) => this.towerHeal(tower));
+  },
+  towerHeal: function(tower) {
+    // For this tower, find all the hostile creeps in the room and attack the first one
 
+    var targetsHeal = tower.room.find(FIND_MY_CREEPS);
+
+    if (targetsHeal.length > 0) {
+      for (var i=0; i < targetsHeal.length; i++) {
+        var targetHeal = targetsHeal[i];
+        if (targetHeal.hits < targetHeal.hitsMax) {
+          console.log("towerHeal (" + tower + ") healing creep: " + targetHeal);
+          tower.heal(targetHeal);
+          break;
+        }
+      }
+    }
   },
   towerAttack: function(tower) {
     // For this tower, find all the hostile creeps in the room and attack the first one
 
-    var attackTargets = tower.room.find(FIND_HOSTILE_CREEPS);
+    var targetsAttack = tower.room.find(FIND_HOSTILE_CREEPS);
 
-    if (attackTargets.length > 0) {
-      console.log("towerAttack (" + tower + ") attacking hostile creep: " + attackTargets[0]);
-      tower.attack(attackTargets[0]);
+    if (targetsAttack.length > 0) {
+      console.log("towerAttack (" + tower + ") attacking hostile creep: " + targetsAttack[0]);
+      tower.attack(targetsAttack[0]);
     }
   },
-  towerRepair: function(tower) {
+  towerRepairContainers: function(tower) {
     // For this tower, find all the damaged structures in the room and repair the first one
-    
+   
     var repairTargets = tower.room.find(FIND_STRUCTURES, {
       filter: (structure) => {
         return structure.structureType == STRUCTURE_CONTAINER &&
@@ -38,6 +57,36 @@ var towers = {
     
     if (repairTargets.length > 0) {
       console.log("towerRepair (" + tower + ") repairing structure: " + repairTargets[0]);
+      tower.repair(repairTargets[0]);
+    }
+  },
+  towerRepairWalls: function(tower) {
+    // For this tower, find all the damaged walls in the room and repair the first one
+   
+    var repairTargets = tower.room.find(FIND_STRUCTURES, {
+      filter: (structure) => {
+        return structure.structureType == STRUCTURE_WALL &&
+        structure.hits < amountWallHPDesired;
+      }
+    });
+    
+    if (repairTargets.length > 0) {
+      console.log("towerRepair (" + tower + ") repairing wall: " + repairTargets[0]);
+      tower.repair(repairTargets[0]);
+    }
+  },
+  towerRepairRamparts: function(tower) {
+    // For this tower, find all the damaged walls in the room and repair the first one
+   
+    var repairTargets = tower.room.find(FIND_STRUCTURES, {
+      filter: (structure) => {
+        return structure.structureType == STRUCTURE_RAMPART &&
+        structure.hits < amountWallHPDesired;
+      }
+    });
+    
+    if (repairTargets.length > 0) {
+      console.log("towerRepair (" + tower + ") repairing rampart: " + repairTargets[0]);
       tower.repair(repairTargets[0]);
     }
   }

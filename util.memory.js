@@ -17,12 +17,21 @@ var utilMemory = {
     return object;
   },
   getBoolean: function(creep, keyMemory) {
+    if (creep.memory.um === undefined) { 
+      creep.memory.um = {};
+    };
     return creep.memory.um[keyMemory];
   },
   getInt: function(creep, keyMemory) {
+    if (creep.memory.um === undefined) { 
+      creep.memory.um = {};
+    };
     return parseInt(creep.memory.um[keyMemory]);
   },
   getString: function(creep, keyMemory) {
+    if (creep.memory.um === undefined) { 
+      creep.memory.um = {};
+    };
     return creep.memory.um[keyMemory];
   },
   hasMemory: function(creep, keyMemory) {

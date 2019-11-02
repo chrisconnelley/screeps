@@ -13,11 +13,12 @@ var towers = {
       }
     });
 
+    towers.forEach((tower) => this.towerRepairRoads(tower));
     towers.forEach((tower) => this.towerRepairContainers(tower));
     towers.forEach((tower) => this.towerRepairWalls(tower));
     towers.forEach((tower) => this.towerRepairRamparts(tower));
-    towers.forEach((tower) => this.towerAttack(tower));
     towers.forEach((tower) => this.towerHeal(tower));
+    towers.forEach((tower) => this.towerAttack(tower));
   },
   towerHeal: function(tower) {
     // For this tower, find all the hostile creeps in the room and attack the first one
@@ -42,7 +43,9 @@ var towers = {
 
     if (targetsAttack.length > 0) {
       console.log("towerAttack (" + tower + ") attacking hostile creep: " + targetsAttack[0]);
-      tower.attack(targetsAttack[0]);
+      var result = tower.attack(targetsAttack[0]);
+      console.log("attack result: " + result);
+        
     }
   },
   towerRepairContainers: function(tower) {
@@ -57,6 +60,23 @@ var towers = {
     
     if (repairTargets.length > 0) {
       console.log("towerRepair (" + tower + ") repairing structure: " + repairTargets[0]);
+      tower.repair(repairTargets[0]);
+    }
+  },
+  towerRepairRoads: function(tower) {
+    // For this tower, find all the damaged walls in the room and repair the first one
+   
+    var repairTargets = tower.room.find(FIND_STRUCTURES, {
+      filter: (structure) => {
+        return (
+          structure.structureType == STRUCTURE_ROAD &&
+          structure.hits < structure.hitsMax*amountRepairMax
+        );
+      }
+    });
+    
+    if (repairTargets.length > 0) {
+      console.log("towerRepair (" + tower + ") repairing road: " + repairTargets[0]);
       tower.repair(repairTargets[0]);
     }
   },

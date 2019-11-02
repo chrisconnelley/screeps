@@ -58,9 +58,10 @@ var control = {
   assignRoleHarvester: function (nameCreep) {
     return this.assignRole(nameCreep, 'harvester');
   },
-  spawn: function (nameCreep, bodyParts, role) {
-    // return÷ "Spawning " + nameCreep + " with [" + bodyParts + "] and role of " + role;
-    var result =  Game.spawns['Spawn1'].spawnCreep(bodyParts, nameCreep, {
+  spawn: function (nameSpawn, nameCreep, bodyParts, role) {
+    console.log("Spawning " + nameCreep + " with [" + bodyParts + "] and role of " + role);
+    
+    var result =  Game.spawns[nameSpawn].spawnCreep(bodyParts, nameCreep, {
       memory: {
         role: role
       }
@@ -68,23 +69,32 @@ var control = {
 
     return util.errorCodeToDisplay(result);
   },
-  spawnGatherer: function () {
+  spawnShort: function(nameSpawn, nameCreep, bodyParts, role) {
+      var bodyPartsSpawn = [];
+      var nameParts = Object.keys(bodyParts);
+      nameParts.forEach((namePart) => {
+         for (var i=0; i < bodyParts[namePart]; i++) {
+             bodyPartsSpawn.push(namePart);
+         }
+      });
+      
+      return this.spawn(nameSpawn, nameCreep, bodyPartsSpawn, role);
+  },
+  spawnGatherer: function (nameSpawn) {
     var role = 'gatherer';
-    return this.spawn('Gatherer' + Game.time, [MOVE, MOVE, MOVE, MOVE, CARRY, CARRY], {
-      memory: {
-        role: role
-      }
-    });
+    return this.spawn(nameSpawn, 'Gatherer' + Game.time, [MOVE, MOVE, MOVE, MOVE, CARRY, CARRY], role);
   },
-  spawnHarvester: function () {
+  spawnHarvester: function (nameSpawn) {
     var role = 'harvester';
-    return this.spawn('Harvester' + Game.time, [MOVE, MOVE, MOVE, WORK, CARRY], {
-      memory: {
-        role: role
-      }
-    });
+    return this.spawn(nameSpawn, 'Harvester' + Game.time, [MOVE, MOVE, MOVE, WORK, CARRY], role);
   },
-  designRoad: function () {
+  spawnUpgrader: function (nameSpawn) {
+    var role = 'upgrader';
+    return this.spawn(nameSpawn, role + Game.time, [MOVE, MOVE, WORK, CARRY], role);
+  },
+  designRoad: function (nameSpawn) {
+    var room = Game.spawns[nameSpawn].room;
+    
     var posStart = Game.flags['road_start'].pos;
     var posEnd = Game.flags['road_end'].pos;
     var path = posStart.findPathTo(posEnd);
@@ -100,6 +110,12 @@ var control = {
     var constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES);
 
     constructionSites.forEach((site) => site.remove());
+  },
+  claimController: function(nameCreep,idController) {
+    var creep = Game.creeps[nameCreep];
+    var controller = Game.getObjectById(idController);
+    //console.log("claimController creep: " + creep + " " + controller);
+    creep.claimController(Game.getObjectById(idController));
   }
 }
 

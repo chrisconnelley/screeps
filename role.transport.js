@@ -1,5 +1,7 @@
-var utilMemory = require('util.memory');
+var util = require('util');
 var shared = require('role.shared');
+var mc = require('util.memory.creep');
+var locator = require('locator');
 
 var roleTransport = {
   role: 'transport',
@@ -9,57 +11,46 @@ var roleTransport = {
     stage: loading or unloading
     isRecharging: true
   */
- costBodyPartsSection: 100,
- bodyPartsSection: [MOVE,CARRY],
-  echo: function(nameCreep, message) {
-    var creep = Game.creeps[nameCreep];
-    creep.say(message);
-    return message;
-  },
-  controlCommand: function(nameCreep, command) {
-    console.log("controlCommand" + command);
+
+  controlCommand: function (nameCreep, command) {
+    // util.log("controlCommand" + command);
     eval(command); // uses nameCreep
-  },
-  displayBadge: function (nameCreep) {
-    var creep = Game.creeps[nameCreep];
-    creep.room.visual.text('T', creep.pos, {
-      color: '#FF0000',
-      font: '10px',
-      stroke: '#FFFFFF'
-    })
   },
   run: function (creep) {
     if (creep.spawning) return;
-    this.runInternal(creep.name); 
-  },
-  runInternal: function(nameCreep) {
-    this.displayBadge(nameCreep);
 
+    shared.displayBadge(creep, 'T');
+
+    if (shared.checkRenew(creep.name, 'reloading', mc.setStage, mc.getStage)) return;
+
+    this.runInternal(creep.name);
+  },
+  runInternal: function (nameCreep) {
     this.perform(nameCreep);
   },
-  perform: function(nameCreep) {
-    // console.log(this.role + " performing");
+  perform: function (nameCreep) {
     var creep = Game.creeps[nameCreep];
-    var stage = this.stage(nameCreep);
+    var stage = mc.getStage(nameCreep);
+    util.log(nameCreep + " " + this.role + " " + stage);
 
     if (stage === undefined) {
       stage = "reloading";
     }
 
-    console.log(this.role + " in stage " + stage);
     if (stage === 'delivering') {
-      // console.log(this.role + " delivering");
-      var target = shared.findEnergyTarget(creep);
-      var result = shared.transferEnergyOrMoveTo(creep, target);
+      var target = locator.findEnergyTarget(creep);
+      var result = locator.transferEnergyOrMoveTo(creep, target);
+
+      util.log(nameCreep + " " + " delivering");
 
       if (creep.store.getFreeCapacity() === creep.store.getCapacity()) {
-        this.assign_stage(nameCreep, "reloading");
+        mc.setStage(nameCreep, "reloading");
       }
 
       if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0 &&
         creep.store.getUsedCapacity() > 0
       ) {
-        shared.depositResource(creep);   
+        locator.depositResource(creep);
       }
 
       return;
@@ -68,39 +59,34 @@ var roleTransport = {
     if (stage === 'reloading') {
       var resultReload;
       // Move non-energy resources to Storage
-      var resourceType = null;
       var container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
         filter: (structure) => {
-            if (structure.structureType == STRUCTURE_CONTAINER) {
-                // console.log(creep.name + " " + structure.store.getUsedCapacity() + " " + structure.store.energy );
-            }
-            
-            return (structure.structureType == STRUCTURE_CONTAINER &&
+          return (structure.structureType == STRUCTURE_CONTAINER &&
             structure.store.getUsedCapacity() !== structure.store.energy);
         }
       });
-      
-      // console.log(creep.name + " " + container.store.getUsedCapacity() + " " + container.store.energy );
-           
-      
+
+      var resultReload;
       if (container) {
         var resourceTypes = Object.keys(container.store);
-        var resultReload = creep.withdraw(container, resourceTypes[0]);
+        resultReload = creep.withdraw(container, resourceTypes[0]);
       } else {
-          container = shared.findResource(creep);
-          // console.log(this.role + " closest energy: " + energyClosest);
-          if (container === undefined || container === null) {
-            // console.log(this.role + " no energy found");
-            
-            this.assign_stage(nameCreep, "delivering");
-            return;
-          }
+        container = locator.findContainerRemote(creep);
+        
+        if (!container) {
+          container = locator.findResource(creep);
+        }
+        
+        if (!container) {
+          mc.setStage(nameCreep, "delivering");
+          return;
+        }
         resultReload = shared.gatherEnergy(creep, container);
       };
 
-      console.log(this.role + " result gather: " + resultReload);
+      // util.log(this.role + " result gather: " + resultReload);
       if (resultReload == ERR_NOT_IN_RANGE) {
-          console.log(creep.name + " moving to " + container );
+        // util.log(creep.name + " moving to " + container );
         creep.moveTo(container, {
           visualizePathStyle: {
             stroke: '#ffaa00'
@@ -110,18 +96,10 @@ var roleTransport = {
     }
 
     if (creep.store.getFreeCapacity() === 0 || container === null) {
-      // console.log(this.role + " has no free capacity");
-      
-      this.assign_stage(nameCreep, "delivering");      
+      // util.log(this.role + " has no free capacity");
+
+      mc.setStage(nameCreep, "delivering");
     }
-  },
-  assign_stage(nameCreep, stage) {
-    var creep = Game.creeps[nameCreep];
-    utilMemory.remember(creep, 'stage', stage);
-  },
-  stage: function (nameCreep) {
-    var creep = Game.creeps[nameCreep];
-    return utilMemory.getString(creep, 'stage');
   }
 };
 

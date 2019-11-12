@@ -1,24 +1,20 @@
 var control = require('control');
-var ccreepsNew = require('ccreeps.new');
-var hud = require('hud');
 var cleanup = require('cleanup');
-var brainBase = require('brain.base');
 var brainFlags = require('brain.flags');
 var brainCreeps = require('brain.creeps');
-var brainTowers = require('brain.towers');
+var brainColony = require('brain.colony');
 
 module.exports.loop = function () {
-  console.log("Game tick" + Game.time);
-  var nameSpawn = 'Spawn1';
+  console.log("Game tick: " + Game.time);
   global.control = control;
+
   cleanup.run();
 
-  var status = ccreepsNew.run();
-
+  brainColony.run();
   brainCreeps.run();
-  brainTowers.run(nameSpawn);
-  brainBase.run(nameSpawn);
+  
   brainFlags.run();
   
-  hud.run(nameSpawn, status); 
+  console.log("Game tick END");
+  console.log();
 }

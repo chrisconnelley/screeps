@@ -1,6 +1,11 @@
+var util = require('util');
+
 var utilMemory = {
   forget: function(creep, keyMemory) {
-    delete creep.ummemory[keyMemory];
+    if (creep.memory.um === undefined) { 
+      creep.memory.um = {};
+    };
+    delete creep.memory.um[keyMemory];
   },
   getArray: function(creep, keyMemory) {
     var arrayMemory = creep.memory.um[keyMemory];
@@ -41,19 +46,19 @@ var utilMemory = {
 
     var valueMemory = creep.memory.um[keyMemory];
 
-    // console.log("hasMemory: " + creep + " " + keyMemory + ": " + valueMemory + " " + (valueMemory !== undefined));
+    // util.log("hasMemory: " + creep + " " + keyMemory + ": " + valueMemory + " " + (valueMemory !== undefined));
     return valueMemory !== undefined;
   },
   remember: function(creep, keyMemory, valueMemory) {
-    // console.log("remember " + creep + " [" + keyMemory + ":" + valueMemory + "]");
     if (creep.memory.um === undefined) { 
       creep.memory.um = {};
     }
 
     creep.memory.um[keyMemory] = valueMemory;
+    return creep.memory.um[keyMemory];
   },
   rememberInArray(creep, keyMemory, valueMemory) {
-    // console.log("rememberInArray " + creep + " [" + keyMemory + ":" + valueMemory + "]");
+    // util.log("rememberInArray " + creep + " [" + keyMemory + ":" + valueMemory + "]");
     if (creep.memory.um === undefined) { 
       creep.memory.um = {};
     }
@@ -74,7 +79,7 @@ var utilMemory = {
     }
 
     if (creep.memory.um[keyMemory].contains[valueMemory]) {
-      console.log("forgetting in array. " + creep + " " + keyMemory + " " + valueMemory);
+      util.log("forgetting in array. " + creep + " " + keyMemory + " " + valueMemory);
     }
   },
   forgetInArrayByIndex(creep, keyMemory, index) {

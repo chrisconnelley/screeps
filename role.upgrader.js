@@ -1,54 +1,37 @@
+var util = require('util');
+var shared = require('role.shared');
+var mc = require('util.memory.creep');
+
 var roleUpgrader = {
-
-  /** @param {Creep} creep **/
   run: function (creep) {
-    var roomSpawn = Game.spawns['Spawn1'].room;
+    if (creep.spawning) return;
+    shared.displayBadge(creep, 'U');
+    var stage = mc.getStage(creep.name);
 
-    if (creep.memory.upgrading && creep.carry.energy == 0) {
-      creep.memory.upgrading = false;
-      // creep.say('🔄 harvest');
-    }
-    if (!creep.memory.upgrading && creep.carry.energy == creep.carryCapacity) {
-      creep.memory.upgrading = true;
-      // creep.say('⚡ upgrade');
+    if (shared.checkRecycle(creep.name, mc.getStage, mc.setStage)) return;
+
+    if (stage == 'upgrading' && creep.carry.energy == 0) {
+      mc.setStage(creep.name,'gathering');
     }
 
-    if (creep.memory.upgrading) {
-      if (creep.upgradeController(roomSpawn.controller) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(roomSpawn.controller, {
-          visualizePathStyle: {
-            stroke: '#00ff00'
-          }
-        });
-      }
+    if (stage != 'upgrading' && creep.carry.energy == creep.carryCapacity) {
+      mc.setStage(creep.name,'upgrading');
+    }
+
+    if (stage == 'upgrading') {
+      shared.upgradeController(creep);
     } else {
-      var source;
-      if (creep.memory.sourceId) {
-        source = Game.getObjectById(creep.memory.sourceId);
-      } else {
-        var sources = creep.room.find(FIND_SOURCES);
-
-        var sourceNum = parseInt(creep.name.substring(creep.name.length - 1)) % sources.length;
-
-        source = sources[sourceNum];
-      }
-
-      if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(source, {
-          visualizePathStyle: {
-            stroke: '#ffaa00'
-          }
-        });
-      }
+      shared.retrieveEnergy(creep);
     }
-
-    creep.room.visual.text('U', creep.pos, {
-      color: '#00FF00',
-      font: '10px',
-      stroke: '#AA0000'
-    });
-
-  }
+  },
+  setStage(nameCreep, stage) {
+    var creep = Game.creeps[nameCreep];
+    utilMemory.remember(creep, 'stage', stage);
+  },
+  stage: function (nameCreep) {
+    var creep = Game.creeps[nameCreep];
+    return utilMemory.getString(creep, 'stage');
+  },
 };
 
 module.exports = roleUpgrader;

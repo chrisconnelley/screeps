@@ -1,47 +1,24 @@
 var util = require('util');
-var roleLoader = require('role.loader');
+var tests = require('tests');
 
 var control = {
-  commandCreep(nameCreep, command) {
-    var creep = Game.creeps[nameCreep];
-    var nameRole = creep.memory.role;
-    nameRole = nameRole.toUpperCase().substring(0,1) + nameRole.slice(1);
-    var jsEval = 'roleLoader.controlCommand("' + nameCreep + '", "'+ command +'");';
+  runTests: function() {
+    var haveAllTestsPassed = true;
+    _.forIn(tests, (testFunction, testFunctionName) => {
+      var resultTest = testFunction();
+      
+      console.log(`${testFunctionName}: ${resultTest}`);
+    
+      haveAllTestsPassed = resultTest && haveAllTestsPassed;
+    });
 
-    console.log(jsEval);
-    eval(jsEval);
+    return haveAllTestsPassed;
   },
-  echo: function(message) {
-    return message;
+  clearMap: function() {
+    delete Memory.colony;
   },
-  assignRoleAllCreeps: function (role) {
-    for (var nameCreep in Memory.creeps) {
-      if (Game.creeps[nameCreep]) {
-        var creep = Game.creeps[nameCreep];
-        creep.memory.role = role;
-      }
-    }
+  setMemory: function (nameCreep, keyMemory, valueMemory) {
 
-    return true;
-  },
-  reassignRole: function(roleSource, roleDestination) {
-    for (var nameCreep in Memory.creeps) {
-      var creep = Game.creeps[nameCreep];
-      if (creep) {
-        if (creep.memory.role === roleSource) {
-          control.assignRole(creep.name, roleDestination);
-        };
-      }
-    }
-
-    return OK;
-  },
-  assignSource: function (nameCreep, sourceId) {
-    var creep = Game.creeps[nameCreep];
-    // var source = Game.getObjectById(sourceId);;
-    creep.memory.sourceId = sourceId;
-
-    return sourceId;
   },
   assignRole: function (nameCreep, roleNew) {
     var creep = Game.creeps[nameCreep];
@@ -49,17 +26,8 @@ var control = {
 
     return "Creep named " + nameCreep + " assigned role: " + roleNew;
   },
-  assignRoleBuilder: function (nameCreep) {
-    return this.assignRole(nameCreep, 'builder');
-  },
-  assignRoleUpgrader: function (nameCreep) {
-    return this.assignRole(nameCreep, 'upgrader');
-  },
-  assignRoleHarvester: function (nameCreep) {
-    return this.assignRole(nameCreep, 'harvester');
-  },
   spawn: function (nameSpawn, nameCreep, bodyParts, role) {
-    console.log("Spawning " + nameCreep + " with [" + bodyParts + "] and role of " + role);
+    util.log("Spawning " + nameCreep + " with [" + bodyParts + "] and role of " + role);
     
     var result =  Game.spawns[nameSpawn].spawnCreep(bodyParts, nameCreep, {
       memory: {
@@ -67,7 +35,7 @@ var control = {
       }
     });
 
-    return util.errorCodeToDisplay(result);
+    return result;
   },
   spawnShort: function(nameSpawn, nameCreep, bodyParts, role) {
       var bodyPartsSpawn = [];
@@ -80,6 +48,30 @@ var control = {
       
       return this.spawn(nameSpawn, nameCreep, bodyPartsSpawn, role);
   },
+  sT: function(nameSpawn, energy) {
+    var parts = Math.floor(energy/100);
+    return this.spawnShort(nameSpawn, 'W'+Game.time, {'carry':parts,'move':parts},'transport');
+  },
+  sR: function(nameSpawn, energy) {
+    var parts = Math.floor(energy/100);
+    return this.spawnShort(nameSpawn, 'W'+Game.time, {'carry':parts,'move':parts},'refueler');
+  },
+  sB: function(nameSpawn, energy) {
+    var parts = Math.floor(energy/200);
+    return this.spawnShort(nameSpawn, 'W'+Game.time, {'carry':parts,'move':parts, 'work':parts},'builder');
+  },
+  spawnUpgrader: function(nameSpawn, nameCreep, energy) {
+    var parts = Math.floor(energy/200);
+    return this.spawnShort(nameSpawn, nameCreep, {'carry':parts,'work':parts, 'move':parts},'upgrader');
+  },
+  sU: function(nameSpawn, energy) {
+    var parts = Math.floor(energy/200);
+    return this.spawnShort(nameSpawn, 'W'+Game.time, {'carry':parts,'work':parts, 'move':parts},'upgrader');
+  },
+  sDef: function(nameSpawn, energy) {
+    var parts = Math.floor(energy/250);
+    return this.spawnShort(nameSpawn, 'D'+Game.time, {'tough':parts*2,'move':parts*3,'attack':parts},'defender');
+  },
   spawnGatherer: function (nameSpawn) {
     var role = 'gatherer';
     return this.spawn(nameSpawn, 'Gatherer' + Game.time, [MOVE, MOVE, MOVE, MOVE, CARRY, CARRY], role);
@@ -87,10 +79,6 @@ var control = {
   spawnHarvester: function (nameSpawn) {
     var role = 'harvester';
     return this.spawn(nameSpawn, 'Harvester' + Game.time, [MOVE, MOVE, MOVE, WORK, CARRY], role);
-  },
-  spawnUpgrader: function (nameSpawn) {
-    var role = 'upgrader';
-    return this.spawn(nameSpawn, role + Game.time, [MOVE, MOVE, WORK, CARRY], role);
   },
   designRoad: function (nameSpawn) {
     var room = Game.spawns[nameSpawn].room;
@@ -114,8 +102,16 @@ var control = {
   claimController: function(nameCreep,idController) {
     var creep = Game.creeps[nameCreep];
     var controller = Game.getObjectById(idController);
-    //console.log("claimController creep: " + creep + " " + controller);
-    creep.claimController(Game.getObjectById(idController));
+    var resultClaim = creep.claimController(controller);
+    
+    if (resultClaim == ERR_GCL_NOT_ENOUGH) {
+        return creep.reserveController(controller);
+    }
+  },
+  signController: function(nameCreep, idController, message) {
+    var creep = Game.creeps[nameCreep];
+    var controller = Game.getObjectById(idController);
+    return creep.signController(controller, message);
   }
 }
 

@@ -1,123 +1,191 @@
-var util = require('util')
+var util = require('util');
+var locator = require('locator');
+
 
 var shared = {
-  errorCodeToDisplay(errorCode) {
-    console.log("DEPRECEATED");
-    return 'USE UTIL';
+  displayBadge: function (creep, characterBadge, size = '10px', color = '#00FF00', stroke = '#AA0000') {
+    creep.room.visual.text(characterBadge, creep.pos, {
+      color: color,
+      font: size,
+      stroke: stroke
+    });
+  },  
+  pave: function(creep) {
+    if (creep.fatigue && creep.pos.lookFor(LOOK_STRUCTURES).length === 0) {
+      creep.room.createConstructionSite(creep.pos.x, creep.pos.y, STRUCTURE_ROAD);
+    } 
   },
-  remember_resourceWanted: function (creep, resource) {
-    creep.memory['resourceWanted'] = resource.id;
-  },
-  forget_resourceWanted: function (creep) {
-    creep.memory['resourceWanted'] = null;
-  },
-  remember_source: function (creep, sourceId) {
-    creep.memory.sourceId = sourceId;
+  retrieveEnergy: function (creep) {
+    var closest_energy = locator.findClosestStore(creep);
+    if (!closest_energy) {
+      closest_energy = locator.findClosestEnergy(creep);
+    }
+    var resultGather = this.gatherEnergy(creep, closest_energy);
 
-    return "remembered source (" + sourceId + ") for " + creep;
+    if (resultGather == ERR_NOT_IN_RANGE) {
+      creep.moveTo(closest_energy, {
+        visualizePathStyle: {
+          stroke: '#0000FF'
+        }
+      });
+    }
+
+    return resultGather;
   },
-  forget_source: function (creep) {
+  upgradeController: function(creep) {
+    var roomSpawn = creep.room;
+    var controller = roomSpawn.controller;
+    var resultUpgrade = creep.upgradeController(controller);
+
+    if (resultUpgrade == ERR_NOT_IN_RANGE) {
+      creep.moveTo(roomSpawn.controller, {
+        visualizePathStyle: {
+          stroke: '#00ff00'
+        }
+      });
+    }
+  },
+  forgetSource: function (creep) {
     creep.memory.sourceId = null;
 
     return "forgot source for " + creep
   },
-  findAssignedSource: function (creep) {
-    // If creep has been assigned a sourceId go there instead
-    if (creep.memory.sourceId) {
-      var sourceMemory = Game.getObjectById(creep.memory.sourceId);
-      
-      if (sourceMemory === null) {
-        shared.forget_source(creep);
-      } else {
-        energyClosestFound = sourceMemory;
-        return energyClosestFound; // If it was assigned, use this energy
+  depositResource: function (creep) {
+    containers = creep.room.find(FIND_STRUCTURES, {
+      filter: (structure) => {
+        return ((structure.structureType == STRUCTURE_STORAGE) && structure.store.getFreeCapacity() > 0);
       }
+    });
+
+
+    var idsInCreepStore = Object.keys(creep.store);
+
+    // deposit all in container 
+    var resultTransfer = creep.transfer(containers[0], idsInCreepStore[0]);
+    if (resultTransfer !== 0 && resultTransfer !== ERR_NOT_IN_RANGE) {
+      // util.log("resultTransfer (" + creep + ") to (" + containers[0] + "): " + util.errorCodeToDisplay(resultTransfer));
     }
+    if (resultTransfer == ERR_NOT_IN_RANGE) {
+      creep.moveTo(containers[0], {
+        visualizePathStyle: {
+          stroke: '#ffffff'
+        }
+      });
+    }
+    // move to container if the container isn't close enough
+
   },
-  findClosestEnergy: function (creep) {
-    var energyClosestFound = null;
-    
-    energyClosestFound = shared.findAssignedSource(creep);
-    if (energyClosestFound) 
-    {
-      // console.log("Using assigned source " + energyClosestFound);
-      return energyClosestFound;
-    }
+  build: function (nameCreep) {
+    var creep = Game.creeps[nameCreep];
 
-    if (creep.memory.role !== 'harvester') {
-      var containers = creep.room.find(FIND_STRUCTURES, {
-        filter: (structure) => {
-          return ((structure.structureType == STRUCTURE_STORAGE)&&
-            structure.store.energy > 0)
-        }
-      });
-      if (containers.length > 0) return containers[0];
-    }
+    target = creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES);
 
-    var tombstones = creep.room.find(FIND_TOMBSTONES);
-    if (tombstones.length > 0) {
-      for (var i=0; i < tombstones.length; i++) {
-        var tombstone = tombstones[i];
-       if (tombstone.store['energy'] > 0) {
-          return tombstone;
-       }
+    if (target) {
+      var resultBuild = creep.build(target);
+
+      if (resultBuild == ERR_NOT_IN_RANGE) {
+        creep.moveTo(target, {
+          visualizePathStyle: {
+            stroke: '#ffffff'
+          }
+        });
       }
+
+      return resultBuild;
+
+    } else {
+      return null;
     }
-
-    var ruins = creep.room.find(FIND_RUINS);
-    if (ruins.length > 0) {
-      for (var i=0; i < ruins.length; i++) {
-        var ruin = ruins[i];
-        // console.log("Ruin with energy: " + ruin.store['energy']);
-        if (ruin.store['energy'] > 0) {
-          return ruin;
-        }
-      }
-    }
-
-    var sources = creep.room.find(FIND_SOURCES);
-    var sourceNum = parseInt(creep.name.substring(creep.name.length-1))%sources.length;
-    var foundSource = sources[sourceNum];
-
-    if (foundSource.energy === 0) {
-      sources.forEach((source) => {
-        if (source.energy > 0) {
-          foundSource = source;
-        }
-      });
-    }
-
-    var resources = creep.room.find(FIND_DROPPED_RESOURCES);
-    if (resources.length > 0) {
-      for (var i=0; i < resources.length; i++) {
-        var resource = resources[i];
-        // console.log("Ruin with energy: " + ruin.store['energy']);
-        if (resource.amount > 0) {
-          return resource;
-        }
-      }
-    }
-
-    return foundSource;
   },
   gatherEnergy: function (creep, source) {
     var result;
     result = creep.harvest(source);
-    
-    if (result === ERR_INVALID_TARGET) {
+
+    if (result === ERR_INVALID_TARGET || result === ERR_NO_BODYPART) {
       result = creep.pickup(source);
     }
 
-    if (result === ERR_INVALID_TARGET) {
+    if (result === ERR_INVALID_TARGET || result === ERR_NO_BODYPART) {
       result = creep.withdraw(source, RESOURCE_ENERGY);
+      util.log(creep.memory.role + " " + creep.name + " withdraw from " + source + " with result " + util.errorCodeToDisplay(result));
     }
 
     if (result !== OK && result !== ERR_NOT_IN_RANGE) {
-      console.log("Gather attempt by " + creep + " from " + source + " result: " + util.errorCodeToDisplay(result));
+      util.log("Gather attempt by " + creep + " from " + source + " result: " + util.errorCodeToDisplay(result));
     }
 
     return result;
   },
+  checkRecycle: function (nameCreep, stage, setStage) {
+    var creep = Game.creeps[nameCreep];
+    var spawnRenew = creep.pos.findClosestByPath(FIND_MY_SPAWNS);
+
+    if (!creep || !spawnRenew) {
+      return false;
+    }
+
+    if (creep.ticksToLive < 100) {
+      setStage(nameCreep, 'recycle');
+      this.displayBadge(creep, '💀');
+
+      creep.transfer(spawnRenew, RESOURCE_ENERGY);
+    }
+
+    if (stage(nameCreep) === 'recycle') {
+      creep.moveTo(spawnRenew, {
+        visualizePathStyle: {
+          stroke: '#ffffff'
+        }
+      });
+      return true;
+    }
+  },
+  checkRenew: function (nameCreep, nameStageAfterRenew, setStage, stage) {
+    var creep = Game.creeps[nameCreep];
+    var spawnRenew = creep.pos.findClosestByPath(FIND_MY_SPAWNS);
+
+    if (!creep || !spawnRenew) {
+      return false;
+    }
+
+    if (creep.ticksToLive < 300 && spawnRenew.energy > 0) {
+      setStage(nameCreep, 'renew');
+      this.displayBadge(creep, '💀');
+
+      creep.transfer(spawnRenew, RESOURCE_ENERGY);
+
+    }
+
+    if (stage(nameCreep) === 'renew') {
+      if (creep.ticksToLive > 1400 || spawnRenew.energy < 10) {
+        setStage(nameCreep, nameStageAfterRenew);
+        return false;
+      }
+      creep.moveTo(spawnRenew, {
+        visualizePathStyle: {
+          stroke: '#ffffff'
+        }
+      });
+      return true;
+    }
+  },
+  transferEnergyOrMoveTo: function (creep, target) {
+    const u = util;
+    var resultTransfer = creep.transfer(target, RESOURCE_ENERGY);
+    
+    u.log(`resultTransfer ${creep.name} to ${target}: ${resultTransfer}`);
+    
+    if (resultTransfer !== OK && resultTransfer !== ERR_NOT_IN_RANGE) {
+      util.log("resultTransfer (" + creep + ") to (" + target + "): " + util.errorCodeToDisplay(resultTransfer));
+    }
+    if (resultTransfer == ERR_NOT_IN_RANGE) {
+      creep.moveTo(target, {
+        visualizePathStyle: {
+          stroke: '#ffffff'
+        }
+      });
+    }
+  }
 }
 
 module.exports = shared;

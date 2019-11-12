@@ -9,14 +9,42 @@
 
 /*
 
-  All creeps should behave the same.
-  
-  Behavior should be based on need.
+1. Spawn Excavators for each source in each room controlled
+2. Resource/Energy gathering:
+  Ruins/Tombstones/Dropped Resources - GATHER IMMEDIATELY
+  Store which resource is being tapped and how much each creep is plannning on taking
+  Only assign one creep per resource
+  Once picked up. Stop remembering that the creep is going to get that resource.
 
-  * Scouts
-  - Create MOVE units that move to each of the nearby rooms
-  - Pull energy sources from the rooms
-  - 
+Builder
+control.spawnShort('Spawn1','B'+Game.time,{'move':16,'work':5,'carry':10},'builder');
+
+Upgrader
+control.spawnShort('Spawn2','U'+Game.time,{'move':4,'work':2,'carry':3},'upgrader');
+
+X01
+control.spawnShort('Spawn1','X01',{'move':5,'work':5},'excavator');
+control.commandCreep('X01','this.assign_home(nameCreep,38,14,\'E6N43\');');
+control.commandCreep('X01','this.assign_source(nameCreep,\'5bbcad419099fc012e636f56\');');
+
+X02
+control.spawnShort('Spawn1','X02',{'move':5,'work':5},'excavator');
+control.commandCreep('X02','this.assign_home(nameCreep,40,17,\'E6N43\');');
+control.commandCreep('X02','this.assign_source(nameCreep,\'5bbcad419099fc012e636f58\');');
+
+X03
+control.spawnShort('Spawn1','X03',{'move':5,'work':5},'excavator');
+  control.commandCreep('X03','this.assign_home(nameCreep,11,3,\'E5N43\');');
+  control.commandCreep('X03','this.assign_source(nameCreep,\'5bbcad339099fc012e636d2e\');');
+
+X04
+control.spawnShort('Spawn1','X04',{'move':5,'work':5},'excavator');
+control.commandCreep('X04','this.assign_home(nameCreep,41,40,\'E4N43\');');
+control.commandCreep('X04','this.assign_source(nameCreep,\'5bbcad259099fc012e636af1\');');
+
+
+5bbcad419099fc012e636f56
+control.commandCreep('Loader12111297','this.assign_source(nameCreep,\'5bbcad419099fc012e636f56\');');
 
 Loader12111366 - 23,9
 Loader12111297 - 23,10
@@ -70,6 +98,32 @@ control.commandCreep('LoaderTest05','this.assign_source(nameCreep,\'5db72c9146fe
 control.commandCreep('LoaderTest06','this.add_Consumer(nameCreep,41,7,\'E6N43\');');
 5db74e45db618494c73c7579
 5db752f2dac98a78a165ec2f
+
+Transport
+
+MOVE + CARRY = 100 
+
+***
+Scouts
+***
+
+Memory.map: {
+  <roomName>: {
+    roomType: oneOfType[],
+    owner: ?
+  }
+}
+
+roomsExplored = Memory.map;
+scout.explore: (creep) => {
+  creep.room.name
+}
+
+getRoomInDirection: (nameRoom, direction) {
+  
+
+}
+
 
 */
 

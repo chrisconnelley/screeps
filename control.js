@@ -60,6 +60,10 @@ var control = {
     var parts = Math.floor(energy/200);
     return this.spawnShort(nameSpawn, 'W'+Game.time, {'carry':parts,'move':parts, 'work':parts},'builder');
   },
+  sH: function(nameSpawn, energy) {
+    var parts = Math.floor(energy/250);
+    return this.spawnShort(nameSpawn, 'W'+Game.time, {'carry':parts,'move':parts*2, 'work':parts},'harvester');
+  },
   spawnUpgrader: function(nameSpawn, nameCreep, energy) {
     var parts = Math.floor(energy/200);
     return this.spawnShort(nameSpawn, nameCreep, {'carry':parts,'work':parts, 'move':parts},'upgrader');
@@ -107,6 +111,12 @@ var control = {
     if (resultClaim == ERR_GCL_NOT_ENOUGH) {
         return creep.reserveController(controller);
     }
+    
+    if (resultClaim == ERR_INVALID_TARGET) {
+        return creep.attackController(controller);
+    }
+    
+    return resultClaim;
   },
   signController: function(nameCreep, idController, message) {
     var creep = Game.creeps[nameCreep];

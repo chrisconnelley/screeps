@@ -2,7 +2,7 @@ var util = require('util');
 var mc = require('util.memory.creep');
 
 var locator = {
-  findAssignedTransportRemote(nameRoom) {
+  findAssignedTransportRemote: function(nameRoom) {
     const u = util;
     var memoryRoomForeign = Memory.colony.rooms[nameRoom];
     var memorySpawnClosest = this.findSpawnOwnedClosest(nameRoom);
@@ -107,6 +107,16 @@ var locator = {
     }
 
     return null;
+  },
+  findClosestMineral: function(creep) {
+    var minerals = creep.room.find(FIND_MINERALS, {
+    filter: (mineral) => {
+        return false;
+    }});
+    
+    console.log(`findClosestMineral`);
+    
+    return null;  
   },
   findClosestEnergy: function (creep) {
     var energyClosestFound = null;

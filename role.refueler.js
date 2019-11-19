@@ -25,7 +25,7 @@ var roleRefueler = {
     this.perform(creep.name); 
   },
   perform: function(nameCreep) {
-    var u = console;
+    var u = util;
     var creep = Game.creeps[nameCreep];
     
     u.log("refueler (" + creep + ") energy: " + creep.store[RESOURCE_ENERGY]);

@@ -11,9 +11,46 @@ var shared = {
     });
   },  
   pave: function(creep) {
-    if (creep.fatigue && creep.pos.lookFor(LOOK_STRUCTURES).length === 0) {
-      creep.room.createConstructionSite(creep.pos.x, creep.pos.y, STRUCTURE_ROAD);
-    } 
+    // if (creep.fatigue && creep.pos.lookFor(LOOK_STRUCTURES).length === 0) {
+    //   creep.room.createConstructionSite(creep.pos.x, creep.pos.y, STRUCTURE_ROAD);
+    // } 
+  },
+  depositResource: function(creep) {
+    const u = util;
+    container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+      filter: (structure) => {
+        return ((structure.structureType == STRUCTURE_CONTAINER || 
+          structure.structureType == STRUCTURE_STORAGE
+          ) && structure.store.getFreeCapacity() > 0);
+      }
+    });
+
+    var idsInCreepStore = Object.keys(creep.store);
+
+    // deposit all in container 
+    var resultTransfer = creep.transfer(container, idsInCreepStore[0]);
+    if (resultTransfer !== 0 && resultTransfer !== ERR_NOT_IN_RANGE) {
+      u.log("resultTransfer (" + creep + ") to (" + container + "): " + util.errorCodeToDisplay(resultTransfer));
+    }
+    if (resultTransfer == ERR_NOT_IN_RANGE) {
+      creep.moveTo(container, {
+        visualizePathStyle: {
+          stroke: '#ffffff'
+        }
+      });
+    }
+    // move to container if the container isn't close enough
+
+  },
+  checkShouldDeposit: function(creep) {
+    var idsInCreepStore = Object.keys(creep.store);
+    if ((idsInCreepStore.length == 1 && idsInCreepStore[0] !== 'energy') || idsInCreepStore.length > 1) {
+      util.log("Creep (" + creep + ") should deposit resources");
+      this.depositResource(creep);  
+      return true;
+    }
+
+    return false;  
   },
   retrieveEnergy: function (creep) {
     var closest_energy = locator.findClosestStore(creep);

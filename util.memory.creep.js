@@ -2,7 +2,7 @@ var util = require('util');
 var um = require('util.memory');
 
 var memoryCreep = {
-  setStage(nameCreep, stage) {
+  setStage: function(nameCreep, stage) {
     var creep = Game.creeps[nameCreep];
     um.remember(creep, 'stage', stage);
   },

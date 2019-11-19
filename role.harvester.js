@@ -4,39 +4,6 @@ var mc = require('util.memory.creep');
 var locator = require('locator');
 
 var roleHarvester = {
-  depositResource: function(creep) {
-    container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-      filter: (structure) => {
-        return ((structure.structureType == STRUCTURE_CONTAINER || 
-          structure.structureType == STRUCTURE_STORAGE
-          ) && structure.store.getFreeCapacity() > 0);
-      }
-    });
-
-    var idsInCreepStore = Object.keys(creep.store);
-
-    // deposit all in container 
-    var resultTransfer = creep.transfer(container, idsInCreepStore[0]);
-    if (resultTransfer !== 0 && resultTransfer !== ERR_NOT_IN_RANGE) {
-      util.log("resultTransfer (" + creep + ") to (" + container + "): " + util.errorCodeToDisplay(resultTransfer));
-    }
-    if (resultTransfer == ERR_NOT_IN_RANGE) {
-      creep.moveTo(container, {
-        visualizePathStyle: {
-          stroke: '#ffffff'
-        }
-      });
-    }
-    // move to container if the container isn't close enough
-
-  },
-  checkShouldDeposit: function(creep) {
-    var idsInCreepStore = Object.keys(creep.store);
-    if ((idsInCreepStore.length == 1 && idsInCreepStore[0] !== 'energy') || idsInCreepStore.length > 1) {
-      util.log("Harvester (" + creep + ") should deposit resources");
-      this.depositResource(creep);
-    }
-  },
   init: function(creep) {
     mc.setStage(creep.name, 'harvest');
   },
@@ -49,10 +16,9 @@ var roleHarvester = {
 
     shared.displayBadge(creep, 'H');
     
+    if (shared.checkShouldDeposit(creep)) return;
     if (shared.checkRenew(creep.name, 'harvest',mc.setStage, mc.getStage)) return;
     
-    this.checkShouldDeposit(creep);
-
     var sitesConstruction = creep.room.find(FIND_MY_CONSTRUCTION_SITES);
     if (sitesConstruction.length > 0) {
       creep.memory.role = 'builder';
@@ -65,10 +31,12 @@ var roleHarvester = {
     }
   },
   harvest: function(creep) {
+    var u = util;
     var closest_energy; 
   
-    
     if (!closest_energy) closest_energy = locator.findClosestEnergy(creep);
+    u.log(`harvest: ${closest_energy}`);
+    if (!closest_energy) closest_energy = locator.findClosestMineral(creep);
     var resultGather = shared.gatherEnergy(creep, closest_energy);
 
     if (resultGather == ERR_NOT_IN_RANGE) {
@@ -85,8 +53,9 @@ var roleHarvester = {
     }
   },
   deliver: function(creep) {      
+    var u = util;
     if (creep.store[RESOURCE_ENERGY] === 0) {
-      util.log("Harvester (" + creep + ") is empty. Switching to harvest");
+      u.log("Harvester (" + creep + ") is empty. Switching to harvest");
       mc.setStage(creep.name, 'harvest');
       return;
     }
@@ -98,6 +67,7 @@ var roleHarvester = {
       }
     });
 
+    u.log(`Harvester looking for structures to deliver to: ${target}`);
     // Targets.length would be 0 if all of the other structures are full
     //   So, instead deposit it in a container.
     if (!target) {
@@ -108,9 +78,10 @@ var roleHarvester = {
             ) && structure.store.getFreeCapacity() > 0);  
         }
       });
-
+      u.log(`Harvester looking for storage to deliver to: ${target}`);
+    
       if (!target) {
-        util.log("All containers are full!");
+        u.log("All containers are full!");
       }
     }
 

@@ -39,7 +39,7 @@ var roleTransport = {
 
     if (stage === 'delivering') {
       var target = locator.findEnergyTarget(creep);
-      var result = locator.transferEnergyOrMoveTo(creep, target);
+      var result = shared.transferEnergyOrMoveTo(creep, target);
 
       util.log(nameCreep + " " + " delivering");
 

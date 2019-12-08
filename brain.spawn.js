@@ -1,7 +1,7 @@
 var util = require('util');
 var brainTowers = require('brain.towers');
 
-var brainBase = {
+var brainSpawn = {
   updateSpawnMap: function (nameSpawn) {
     var spawn = Game.spawns[nameSpawn];
     var memoryRoom = Memory.colony.rooms[spawn.room.name];
@@ -79,4 +79,4 @@ var brainBase = {
   }
 }
 
-module.exports = brainBase;
+module.exports = brainSpawn;

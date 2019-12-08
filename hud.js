@@ -29,6 +29,7 @@ var hud = {
     }
 
     status.push(`Game time: ${Game.time}`);
+    status.push(`CPU: ${Game.cpu.getUsed()} ${Game.cpu.limit-Game.cpu.tickLimit} / ${Game.cpu.bucket}`);
     status.push(`Energy available: ${Game.rooms[nameRoom].energyAvailable} / ${Game.rooms[nameRoom].energyCapacityAvailable}`);
     status.push(`Tick Length: ${lengthTickInMs/1000} seconds`);
     status.push(`RCL Upgrade in ${energyToControllerUpgrade} energy`);

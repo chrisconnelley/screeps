@@ -35,7 +35,7 @@ var roleTransportRemote = {
     u.log(`nameRoomTransport: ${nameRoomTransport}`);
   },
   gather: function(creep) {
-    var u = util;
+    const u =  util;
     var closest_energy; 
     closest_energy = locator.findBestResource(creep);
     

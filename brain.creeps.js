@@ -1,8 +1,11 @@
+var roleAttacker = require('role.attacker');
 var roleBuilder = require('role.builder');
 var roleClaimer = require('role.claimer');
 var roleDefender = require('role.defender');
 var roleExcavator = require('role.excavator');
 var roleHarvester = require('role.harvester');
+var roleJanitor = require('role.janitor');
+var roleMiner = require('role.miner');
 var roleRefueler = require('role.refueler');
 var roleScout = require('role.scout');
 var roleTransport = require('role.transport');
@@ -47,6 +50,15 @@ var brainCreeps = {
       }
       if (creep.memory.role === 'claimer') {
         roleClaimer.run(creep);
+      }
+      if (creep.memory.role === 'miner') {
+        roleMiner.run(creep);
+      }
+      if (creep.memory.role === 'janitor') {
+        roleJanitor.run(creep);
+      }
+      if (creep.memory.role === 'attacker') {
+        roleAttacker.run(creep);
       }
   }
   }

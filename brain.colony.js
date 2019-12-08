@@ -1,12 +1,11 @@
 var util = require('util');
 var brainRoom = require('brain.room');
-var locator = require('locator');
 var map = require('map');
 
 var brainColony = {
-  run: function () {
+  run: function() {
     const u = util;
-    u.log("brainColony run()");
+    u.log("[brain.colony run]");
 
     map.createInitialColonyMap();
 
@@ -22,26 +21,28 @@ var brainColony = {
       brainRoom.run(nameRoom);
     });
 
-    // _.forIn(Memory.colony.rooms, (memoryRoom, nameRoom) => {
-    //   if (memoryRoom.controller) {
-    //     u.log(`${JSON.stringify(memoryRoom)}`)
-    //     if (!memoryRoom.controller.my && !memoryRoom.controller.owner) {
-    //       u.log(`Room that is not mine and has no owner: ${nameRoom}`)
-    //       locator.findAssignedScout(nameRoom);
-    //       var sources = memoryRoom.sources;
+    _.forIn(Memory.colony.rooms, (memoryRoom, nameRoom) => {
+      if (memoryRoom.controller) {
+        // u.log(`${JSON.stringify(memoryRoom)}`)
+        if (util.isRoomRemoteAndFree(nameRoom)) {
+          // u.log(`Room that is not mine and has no owner: ${nameRoom}`)
+          // locator.findAssignedScout(nameRoom);
+          var sources = memoryRoom.sources;
           
-    //       u.log(`Room ${nameRoom} has sources: ${JSON.stringify(sources)}`);
-    //       _.forIn(sources, (source, idSource) => {
-    //         brainRoom.checkSource(nameRoom, idSource);
-    //         locator.findAssignedTransportRemote(nameRoom);
-    //       });
-    //     }
-    //   } else {
-    //     u.log(`Room ${nameRoom} doesn't have controller`);
-        
-    //   }
-
-    // });
+          u.log(`Room ${nameRoom} has sources: ${JSON.stringify(sources)}`);
+          brainRoom.reserveController(nameRoom);
+            
+          _.forIn(sources, (source, idSource) => {
+            // brainRoom.checkSource(nameRoom, idSource);
+            // locator.findAssignedTransportRemote(nameRoom);
+          });
+        } else {
+          u.log(`Room ${nameRoom} isn't mine`);
+        }
+      } else {
+        u.log(`Room ${nameRoom} doesn't have controller`);
+      }
+    });
   }
 };
 

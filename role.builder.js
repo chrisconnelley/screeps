@@ -26,15 +26,17 @@ var roleBuilder = {
         creep.memory.role = 'harvester';
       }
     } else {
-       //this.harvest(creep);
-       shared.retrieveEnergy(creep);
+       this.harvest(creep);
+       //shared.retrieveEnergy(creep);
         
     }
   },
   harvest: function(creep) {
-    var u = util;
+    const u =  util;
     var closest_energy; 
   
+    if (!closest_energy) closest_energy = locator.findClosestStore(creep);
+
     if (!closest_energy) closest_energy = locator.findClosestEnergy(creep);
     u.log(`harvest: ${closest_energy}`);
     if (!closest_energy) closest_energy = locator.findClosestMineral(creep);

@@ -5,11 +5,12 @@ var brainSpawn = require('brain.spawn');
 var mc = require('util.memory.creep');
 var locator = require('locator');
 var map = require('map');
+var brainData = require('brain.data');
 
 const amountMaxUpgraderCost = 3200;
 
 var brainRoom = {
-  checkController: function(nameRoom) {
+  checkController: function (nameRoom) {
     const u = util;
     var memoryRoom = Memory.colony.rooms[nameRoom];
     var memoryController = memoryRoom.controller;
@@ -31,14 +32,14 @@ var brainRoom = {
         memoryController.nameUpgrader = null;
       }
     }
- 
+
     u.log(`spawn upgrader check: ${nameUpgrader} ${!nameUpgrader} ${isUpgraderOld} E: ${memoryRoom.energyAvailable} / ${memoryRoom.energyCapacityAvailable}`)
     if ((!nameUpgrader || isUpgraderOld) &&
       (memoryRoom.energyAvailable == memoryRoom.energyCapacityAvailable || memoryRoom.energyAvailable > amountMaxUpgraderCost)
     ) {
       if (isUpgraderOld) memoryController.nameUpgrader = null;
       var memorySpawns = memoryRoom.spawns;
-      
+
       u.log(`inside spawn upgrader ${memorySpawns}`)
       var nameSpawnUse = _.findKey(memorySpawns, (memorySpawn) => {
         return !memorySpawn.spawning
@@ -48,10 +49,10 @@ var brainRoom = {
 
       if (nameSpawnUse) {
         var nameUpgraderNew = 'U' + nameSpawnUse + Game.time;
-                
+
         var resultSpawn = OK;
         var energyUsed = memoryRoom.energyAvailable > amountMaxUpgraderCost ? amountMaxUpgraderCost : memoryRoom.energyAvailable;
-        var resultSpawn = control.spawnUpgrader(nameSpawnUse, nameUpgraderNew, energyUsed);
+        var resultSpawn = control.sU(nameSpawnUse, energyUsed, nameUpgraderNew);
         u.log(`${nameUpgraderNew} resultSpawn: ${resultSpawn}`);
         if (resultSpawn === OK) {
           memoryController.nameUpgrader = nameUpgraderNew;
@@ -59,13 +60,58 @@ var brainRoom = {
         }
       }
     }
-
   },
-  checkSource: function(nameRoom, idSource) {
-    var u = console;
+  reserveController: function (nameRoom) {
+    const u = util;
+    u.log(`[brain.room reserveController] nameRoom: ${nameRoom}`);
+
+    var memoryRoom = Memory.colony.rooms[nameRoom];
+    var memoryController = memoryRoom.controller;
+
+    var nameClaimer = memoryController.nameClaimer;
+
+    if (!nameClaimer) {
+      var spawn = locator.findSpawnOwnedClosest(nameRoom);
+      u.log(`spawn: ${spawn}`);
+      if (spawn) {
+        var nameRoomSpawn = spawn.pos.roomName;
+        memoryRoom = Memory.colony.rooms[nameRoomSpawn];
+        if (!memoryRoom) return;
+        u.log(`spawn: ${spawn.name} room: ${nameRoomSpawn} memoryRoom: ${JSON.stringify(memoryRoom)}`);
+        
+        var result; // 
+        result = { code: ERR_NOT_IN_RANGE }; 
+        // result =  control.sC(spawn.name,spawn.room.energyAvailable);
+        
+        if (result === OK) {
+          memoryController.nameClaimer = result.nameCreep;
+          u.log(`Attempt to create controller claimer succeeded: ${result.nameCreep}`);
+        } else {
+          u.log(`Attempt to create controller claimer failed: ${util.errorCodeToDisplay(result.code)}`);
+        }
+      }
+    } else {
+      var creep = Game.creep[nameClaimer];
+      if (!creep) {
+        memoryController.nameClaimer = null;
+        this.reserveController(nameRoom);
+      }
+
+      if (creep.idController !== memoryController.id) {
+        creep.idController = memoryController.id;
+        creep.posController = memoryController.pos;
+      }
+    }
+  },
+  checkSource: function (nameRoom, idSource) {
+    var u = util;
+
+    if (nameRoom === 'E4N43') u = console;
+
     var memoryRoom = Memory.colony.rooms[nameRoom];
     var memorySources = memoryRoom.sources;
 
+    u.log(`[brain.room checkSource] memorySources: ${memorySources}`);
     if (!memorySources) return;
 
     var memorySource = memorySources[idSource];
@@ -99,16 +145,16 @@ var brainRoom = {
     u.log(`Check Source Creep: ${nameExcavator}`);
 
     if (!util.isRoomMine(nameRoom)) {
-        return; // TURN OFF REMOTE
-    //   var spawn = locator.findSpawnOwnedClosest(nameRoom);
-    //   u.log(`spawn: ${spawn}`);
-    //   if (spawn) {
-    //     var nameRoomSpawn = spawn.pos.roomName;
-    //     memoryRoom = Memory.colony.rooms[nameRoomSpawn];
-    //     if (!memoryRoom) return;
-    //     u.log(`spawn: ${spawn.name} room: ${nameRoomSpawn} memoryRoom: ${JSON.stringify(memoryRoom)}`);
-    //     memorySpawns = memoryRoom.spawns;
-    //   }
+      return; // TURN OFF REMOTE
+      //   var spawn = locator.findSpawnOwnedClosest(nameRoom);
+      //   u.log(`spawn: ${spawn}`);
+      //   if (spawn) {
+      //     var nameRoomSpawn = spawn.pos.roomName;
+      //     memoryRoom = Memory.colony.rooms[nameRoomSpawn];
+      //     if (!memoryRoom) return;
+      //     u.log(`spawn: ${spawn.name} room: ${nameRoomSpawn} memoryRoom: ${JSON.stringify(memoryRoom)}`);
+      //     memorySpawns = memoryRoom.spawns;
+      //   }
     }
 
     u.log(`memoryRoom: ${memoryRoom} memorySpawns: ${memorySpawns}`);
@@ -116,24 +162,27 @@ var brainRoom = {
     var partsPossible = parseInt(memoryRoom.energyCapacityAvailable / 150);
     partsPossible = partsPossible > 5 ? 5 : partsPossible;
     var costExcavator = partsPossible * 150;
-    
 
-    console.log(`parts possible: ${partsPossible}  costExcavator: ${costExcavator}`);
+
+    u.log(`parts possible: ${partsPossible}  costExcavator: ${costExcavator}`);
     if ((!nameExcavator || isExcavatorOld) && memoryRoom.energyAvailable >= costExcavator) {
       if (isExcavatorOld) {
         memorySource.nameExcavator = null;
-      } 
-        
+      }
+
       var nameSpawnUse = _.findKey(memorySpawns, (memorySpawn) => {
         return !memorySpawn.spawning
       });
-      
+
       if (nameSpawnUse) {
         var spawn = Game.spawns[nameSpawnUse];
         var nameExcavatorNew = 'X' + nameSpawnUse + Game.time;
-                
+
         var resultSpawn = OK;
-        var resultSpawn = control.spawnShort(nameSpawnUse, nameExcavatorNew, {'move':partsPossible,'work':partsPossible},'excavator');
+        var resultSpawn = control.spawnShort(nameSpawnUse, nameExcavatorNew, {
+          'move': partsPossible,
+          'work': partsPossible
+        }, 'excavator');
         u.log(`${nameExcavatorNew} resultSpawn: ${resultSpawn}`);
         if (resultSpawn === OK) {
           memorySource.nameExcavator = nameExcavatorNew;
@@ -142,112 +191,115 @@ var brainRoom = {
           u.log(`Result of assigning Source (${memorySource.id}) to excavator ${nameExcavatorNew}: ${resultSet}`);
         }
       }
-    // } else if (!nameExcavator && memoryRoom.energyAvailable < 750) {
-    //   u = util;
-    //   u.log(`Room ${nameRoom} Energy low! ${memoryRoom.energyAvailable}`)
-    //   var spawn = Game.rooms[nameRoom].find(FIND_MY_SPAWNS)[0];
-    //   u.log(`Room ${nameRoom} spawn: ${spawn}`)
-      
-    //   if (!spawn) return;
+    } else if (!nameExcavator && memoryRoom.energyAvailable < 750) {
+         u = console;
+         u.log(`Room ${nameRoom} Energy low! ${memoryRoom.energyAvailable}`)
+         var spawn = Game.rooms[nameRoom].find(FIND_MY_SPAWNS)[0];
+         u.log(`Room ${nameRoom} spawn: ${spawn}`)
 
-    //   u.log(`Spawn.spawning: ${spawn.spawning} Game.time: ${Game.time}`)
-    //   if (!spawn.spawning && Game.time % 200 === 0) {
-    //     u.log(`Spawing harvester`)
-    //     control.sH(spawn.name, memoryRoom.energyAvailable);
-    //   }
+         if (!spawn) return;
+
+         u.log(`Spawn.spawning: ${spawn.spawning} Game.time: ${Game.time}`)
+         if (!spawn.spawning && Game.time % 200 === 0) {
+           u.log(`Spawing harvester`)
+           control.sH(spawn.name, memoryRoom.energyAvailable);
+         }
     }
   },
-  // checkMineral: function(nameRoom, idMineral) {
-  //   var u = util;
-  //   var memoryRoom = Memory.colony.rooms[nameRoom];
-  //   var memoryMinerals = memoryRoom.minerals;
+  checkMineral: function (nameRoom, idMineral) {
+    const u = util;
+    var memoryRoom = Memory.colony.rooms[nameRoom];
+    var memoryMinerals = memoryRoom.minerals;
 
-  //   if (!memoryMinerals) return;
+    if (!memoryMinerals) return;
 
-  //   var memoryMineral = memoryMineral[idMineral];
-  //   var memorySpawns = memoryRoom.spawns;
+    var memoryMineral = memoryMinerals[idMineral];
 
-  //   var nameMiner = memoryMineral.nameMiner;
-  //   var isMinerOld = false;
+    var memorySpawns = memoryRoom.spawns;
 
-  //   u.log(`nameRoom: ${nameRoom} idMineral: ${idMineral}`);
+    var nameMiner = memoryMineral.nameMiner;
+    var isMinerOld = false;
 
-  //   if (nameMiner) {
-  //     var creep = Game.creeps[nameMiner];
+    u.log(`nameRoom: ${nameRoom} idMineral: ${idMineral} hasExtractor: ${memoryMineral.hasExtractor}`);
 
-  //     if (creep) {
-  //       u.log(`Miner ${nameMiner} ticks to live: ${creep.ticksToLive}`);
-  //       isMinerOld = creep.ticksToLive < 100;
-  //       var mineralCreep = mc.getMineral(creep.name);
+    if (!memoryMineral.hasExtractor) return;
+    creep = this.matchMiner(nameMiner, memoryMineral);
 
-  //       u.log(`Creep (${creep}) mineral: ${mineralCreep}`)
+    if (memoryMineral.mineralAmount === 0) {
+      if (creep) {
+        mc.setStage(creep.name, 'recycle');
+      }
+      return;
+    }
 
-  //       if (!mineralCreep) {
-  //         mc.setMineral(creep.name, idMineral);
-  //       }
-  //     } else {
-  //       u.log("Forgetting: " + memoryMineral.nameMiner);
-  //       memoryMineral.nameMiner = null;
-  //     }
-  //     u.log("Mineral " + idMineral + " mineralAmount: " + memoryMineral.mineralAmount + " Miner: " + nameMiner + " " + creep);
-  //   }
+    isMinerOld = !!creep && creep.ticksToLive < 100;
 
-  //   u.log(`Check Mineral Creep: ${nameMiner}`);
+    u.log(`[checkMineral] creep: ${creep}`);
 
-  //   u.log(`memoryRoom: ${memoryRoom} memorySpawns: ${memorySpawns}`);
-  //   u.log(`nameMiner: ${nameMiner} isMinerOld: ${isMinerOld} memoryRoom.energyAvailable: ${memoryRoom.energyAvailable}`);
-  //   if ((!nameMiner || isMinerOld) && memoryRoom.energyAvailable > 750) {
-  //     if (isMinerOld) {
-  //       memoryMineral.nameMiner = null;
-  //     } 
+    u.log(`memoryRoom: ${memoryRoom} memorySpawns: ${memorySpawns}`);
+    u.log(`nameMiner: ${nameMiner} isMinerOld: ${isMinerOld} memoryRoom.energyAvailable: ${memoryRoom.energyAvailable}`);
+    if (!creep || isMinerOld) {
+      if (isMinerOld) {
+        memoryMineral.nameMiner = null;
+      }
 
-  //     var nameSpawnUse = _.findKey(memorySpawns, (memorySpawn) => {
-  //       return !memorySpawn.spawning
-  //     });
-      
-  //     if (nameSpawnUse) {
-  //       var spawn = Game.spawns[nameSpawnUse];
-  //       var nameMinerNew = 'X' + nameSpawnUse + Game.time;
-                
-  //       var resultSpawn = OK;
-  //       var resultSpawn = control.spawnShort(nameSpawnUse, nameMinerNew, {'move':5,'work':5},'miner');
-  //       u.log(`${nameMinerNew} resultSpawn: ${resultSpawn}`);
-  //       if (resultSpawn === OK) {
-  //         memoryMineral.nameMiner = nameMinerNew;
-  //         u.log(`resultSpawn inside: ${resultSpawn}`);
-  //         var resultSet = mc.setMineral(nameMinerNew, memoryMineral.id);
-  //         u.log(`Result of assigning Mineral (${memoryMineral.id}) to miner ${nameMinerNew}: ${resultSet}`);
-  //       }
-  //     }
-  //   }
-  // },
-  // matchMiner: function(nameMiner, memoryMineral) {
-  //   const u = util;
+      var nameSpawnUse = _.findKey(memorySpawns, (memorySpawn) => {
+        return !memorySpawn.spawning
+      });
 
-  //   if (nameMiner) {
-  //     var creep = Game.creeps[nameMiner];
+      if (nameSpawnUse) {
+        var resultSpawn = { code: OK, nameCreep: null };
+        var resultSpawn = control.sM(nameSpawnUse, memoryRoom.energyAvailable);
+        u.log(`${resultSpawn.nameCreep} resultSpawn: ${JSON.stringify(resultSpawn)}`);
+        if (resultSpawn.code === OK) {
+          memoryMineral.nameMiner = resultSpawn.nameCreep;
+          u.log(`resultSpawn inside: ${resultSpawn.code}`);
+          var resultSet = mc.setMineral(resultSpawn.nameCreep, memoryMineral.id);
+          u.log(`Result of assigning Mineral (${memoryMineral.id}) to miner ${resultSpawn.nameCreep}: ${resultSet}`);
+        }
+      }
+    }
+  },
+  matchMiner: function (nameMiner, memoryMineral) {
+    const u = util;
 
-  //     if (creep) {
-  //       u.log(`Miner ${nameMiner} ticks to live: ${creep.ticksToLive}`);
-  //       isMinerOld = creep.ticksToLive < 100;
-  //       var mineralCreep = mc.getMineral(creep.name);
+    idMineral = memoryMineral.id;
 
-  //       u.log(`Creep (${creep}) mineral: ${mineralCreep}`)
+    u.log(`[matchMiner] namerMiner: ${nameMiner} memoryMineral: ${JSON.stringify(memoryMineral)}`);
+    if (nameMiner) {
+      var creep = Game.creeps[nameMiner];
 
-  //       if (!mineralCreep) {
-  //         mc.setMineral(creep.name, idMineral);
-  //       }
-  //     } else {
-  //       u.log("Forgetting: " + memoryMineral.nameMiner);
-  //       memoryMineral.nameMiner = null;
-  //     }
-  //     u.log("Mineral " + idMineral + " mineralAmount: " + memoryMineral.mineralAmount + " Miner: " + nameMiner + " " + creep);
-  //   }
+      if (creep) {
+        var mineralCreep;
 
-  //   return {};
-  // },
-  findResources: function(nameRoom) {
-    var u = util;
+        try {
+          mineralCreep = mc.getMineral(creep.name);
+        } catch {
+
+        }
+
+        u.log(`Creep (${creep}) mineral: ${mineralCreep}`);
+
+        if (!mineralCreep) {
+          mc.setMineral(creep.name, idMineral);
+        }
+
+        u.log("Mineral " + idMineral + " mineralAmount: " + memoryMineral.mineralAmount + " Miner: " + nameMiner + " " + creep);
+        return creep;
+      } else {
+        u.log("Forgetting: " + memoryMineral.nameMiner);
+        memoryMineral.nameMiner = null;
+
+        u.log("Mineral " + idMineral + " mineralAmount: " + memoryMineral.mineralAmount + " Miner: " + nameMiner + " " + creep);
+        return null;
+      }
+    }
+
+    u.log("Mineral " + idMineral + " mineralAmount: " + memoryMineral.mineralAmount + " Miner: " + nameMiner + " " + creep);
+    return null;
+  },
+  findResources: function (nameRoom) {
+    const u = util;
     var isRoomVisible = !!Game.rooms[nameRoom];
     var memoryRoom = Memory.colony.rooms[nameRoom];
 
@@ -260,10 +312,11 @@ var brainRoom = {
         delete memoryRoom.resources;
       }
     }
-    
+
   },
-  run: function(nameRoom) {
+  run: function (nameRoom) {
     const u = util;
+    u.log(`*** Brain.Room.Run ***`);
     var room = Game.rooms[nameRoom];
 
     if (!room) {
@@ -271,6 +324,7 @@ var brainRoom = {
     }
 
     this.checkController(nameRoom);
+    brainData.recordRoom(nameRoom);
 
     hud.run(nameRoom, []);
 
@@ -285,33 +339,40 @@ var brainRoom = {
       map.mapSource(source);
       this.checkSource(nameRoom, source.id);
     });
-    
+
+    var minerals = room.find(FIND_MINERALS); // Find all the sources
+    minerals.forEach((mineral) => {
+      u.log(`${nameRoom} mineral: ${mineral.id}`)
+      map.mapMineral(mineral);
+      this.checkMineral(nameRoom, mineral.id);
+    });
+
     this.findResources(nameRoom);
   },
   updateMap: function (nameRoom) {
-    var u = util;
+    const u = util;
     var memoryRooms = Memory.colony.rooms;
     var memoryRoom = memoryRooms[nameRoom];
 
     var room = Game.rooms[nameRoom];
-   
+
     u.log(`nameRoom: ${nameRoom} room: ${room}`)
 
     if (!memoryRoom) {
       memoryRooms[nameRoom] = {};
       memoryRooms[nameRoom] = Object.assign({}, room);
       memoryRooms[nameRoom].tickCreated = Game.time;
-      memoryRooms[nameRoom].tickUpdated = Game.time;      
+      memoryRooms[nameRoom].tickUpdated = Game.time;
 
       if (!memoryRooms[nameRoom].sources) {
         memoryRooms[nameRoom].sources = {};
       }
       return;
-    } 
-    
+    }
+
     memoryRoom.energyAvailable = room.energyAvailable;
     memoryRoom.energyCapacityAvailable = room.energyCapacityAvailable;
-    memoryRoom.tickUpdated = Game.time;      
+    memoryRoom.tickUpdated = Game.time;
   }
 };
 

@@ -8,8 +8,9 @@ var roleHarvester = {
     mc.setStage(creep.name, 'harvest');
   },
   run: function (creep) {
-    if (creep.spawning) 
-    {
+    const u = util;
+    u.log(`[role.harvester run] creep: ${creep}`);
+    if (creep.spawning) {
       this.init(creep);
       return;
     };
@@ -21,17 +22,20 @@ var roleHarvester = {
     
     var sitesConstruction = creep.room.find(FIND_MY_CONSTRUCTION_SITES);
     if (sitesConstruction.length > 0) {
+      u.log(`[role.harvester run] creep: ${creep} found construction sites (${sitesConstruction.length} swithching to builder)`);
       creep.memory.role = 'builder';
     }
 
     if (mc.getStage(creep.name) === 'harvest') {
+      u.log(`[role.harvester run] creep: ${creep} harvest`);
       this.harvest(creep);
     } else {
+      u.log(`[role.harvester run] creep: ${creep} deliver`);
       this.deliver(creep);
     }
   },
   harvest: function(creep) {
-    var u = util;
+    const u =  util;
     var closest_energy; 
   
     if (!closest_energy) closest_energy = locator.findClosestEnergy(creep);
@@ -53,29 +57,30 @@ var roleHarvester = {
     }
   },
   deliver: function(creep) {      
-    var u = util;
+    const u =  util;
     if (creep.store[RESOURCE_ENERGY] === 0) {
       u.log("Harvester (" + creep + ") is empty. Switching to harvest");
       mc.setStage(creep.name, 'harvest');
       return;
     }
-    var target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-      filter: (structure) => {
-        return (
-          structure.structureType == STRUCTURE_EXTENSION ||
-          structure.structureType == STRUCTURE_SPAWN) && structure.energy < structure.energyCapacity;
-      }
-    });
 
-    u.log(`Harvester looking for structures to deliver to: ${target}`);
+    var target;
+    //  = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+    //   filter: (structure) => {
+    //     return (
+    //       structure.structureType == STRUCTURE_EXTENSION ||
+    //       structure.structureType == STRUCTURE_SPAWN) && structure.energy < structure.energyCapacity;
+    //   }
+    // });
+
+    // u.log(`Harvester looking for structures to deliver to: ${target}`);
     // Targets.length would be 0 if all of the other structures are full
     //   So, instead deposit it in a container.
     if (!target) {
       target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
         filter: (structure) => {
-          return ((structure.structureType == STRUCTURE_CONTAINER || 
-            structure.structureType == STRUCTURE_STORAGE
-            ) && structure.store.getFreeCapacity() > 0);  
+          return (structure.structureType == STRUCTURE_STORAGE
+             && structure.store.getFreeCapacity() > 0);  
         }
       });
       u.log(`Harvester looking for storage to deliver to: ${target}`);

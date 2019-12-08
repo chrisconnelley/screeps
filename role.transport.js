@@ -17,11 +17,17 @@ var roleTransport = {
     eval(command); // uses nameCreep
   },
   run: function (creep) {
+    const u = util;
     if (creep.spawning) return;
 
     shared.displayBadge(creep, 'T');
 
-    if (shared.checkRenew(creep.name, 'reloading', mc.setStage, mc.getStage)) return;
+    if (shared.checkRenew(creep.name, 'reloading', mc.setStage, mc.getStage)) 
+    {
+      u.log(`[role.transport run] creep (${creep}) renewing`);
+
+      return;
+    }
 
     this.runInternal(creep.name);
   },
@@ -29,9 +35,10 @@ var roleTransport = {
     this.perform(nameCreep);
   },
   perform: function (nameCreep) {
+    const u = util;
     var creep = Game.creeps[nameCreep];
     var stage = mc.getStage(nameCreep);
-    util.log(nameCreep + " " + this.role + " " + stage);
+    u.log(nameCreep + " " + this.role + " " + stage);
 
     if (stage === undefined) {
       stage = "reloading";
@@ -41,7 +48,7 @@ var roleTransport = {
       var target = locator.findEnergyTarget(creep);
       var result = shared.transferEnergyOrMoveTo(creep, target);
 
-      util.log(nameCreep + " " + " delivering");
+      u.log(nameCreep + " " + " delivering");
 
       if (creep.store.getFreeCapacity() === creep.store.getCapacity()) {
         mc.setStage(nameCreep, "reloading");
@@ -50,7 +57,8 @@ var roleTransport = {
       if (creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0 &&
         creep.store.getUsedCapacity() > 0
       ) {
-        locator.depositResource(creep);
+        u.log(`[role.transport perform] depositing resources`);
+        shared.depositResource(creep);
       }
 
       return;
@@ -84,9 +92,9 @@ var roleTransport = {
         resultReload = shared.gatherEnergy(creep, container);
       };
 
-      // util.log(this.role + " result gather: " + resultReload);
+      u.log(this.role + " result gather: " + resultReload);
       if (resultReload == ERR_NOT_IN_RANGE) {
-        // util.log(creep.name + " moving to " + container );
+        u.log(creep.name + " moving to " + container );
         creep.moveTo(container, {
           visualizePathStyle: {
             stroke: '#ffaa00'
@@ -96,7 +104,7 @@ var roleTransport = {
     }
 
     if (creep.store.getFreeCapacity() === 0 || container === null) {
-      // util.log(this.role + " has no free capacity");
+      u.log(this.role + " has no free capacity");
 
       mc.setStage(nameCreep, "delivering");
     }

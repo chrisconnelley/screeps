@@ -10,12 +10,11 @@ var roleMiner = {
         if (shared.checkRecycle(creep.name, mc.getStage, mc.setStage)) return;
     
         shared.displayBadge(creep,'X','10px','#FF0000','#000000');
-        this.perform(creep.name); 
+        this.perform(creep); 
     },  
     perform: function(creep) {
         const u = util;
-        var creep = Game.creeps[nameCreep];
-        var mineral = mc.getMineral(nameCreep);
+        var mineral = mc.getMineral(creep.name);
         u.log(`mineral: ${mineral}`);
     
         if (!mineral) return;

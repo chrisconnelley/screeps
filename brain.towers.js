@@ -16,9 +16,9 @@ var towers = {
       this.towerAttack(tower) == OK || 
         this.towerHeal(tower) == OK ||
         this.towerRepairRamparts(tower) ||
-        this.towerRepairContainers(tower) == OK ||
-        this.towerRepairWalls(tower) == OK 
-    });
+        this.towerRepairWalls(tower) == OK ||
+        this.towerRepairContainers(tower) == OK
+      });
   },
   towerHeal: function(tower) {
     // For this tower, find all the hostile creeps in the room and attack the first one

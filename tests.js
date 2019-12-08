@@ -1,5 +1,6 @@
 var map = require('map');
 var utilTests = require('util.tests');
+const brainTasks = require('brain.tasks');
 
 var tests = {
   test_getOrCreateMemoryObject: function() {
@@ -118,6 +119,18 @@ var tests = {
     delete Memory.testing1;
 
     return hasAllPassingTests;
+  },
+  test_brainTasks_createTask: function() {
+    var hasAllPassingTests = true;
+
+    console.log(``);
+    console.log(`Testing brainTasks createTasks:`);
+
+    const idTaskGlobal = brainTasks.idTaskGlobal;
+
+    const typeTaskValid = 'deliver';
+    const targetStartValid = Game.spawns['Spawn1'];
+
   }
 };
 

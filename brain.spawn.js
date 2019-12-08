@@ -66,7 +66,7 @@ var brainBase = {
   recycleCreeps: function(spawn) {
     var creeps = spawn.room.find(FIND_MY_CREEPS, {
       filter: (creep) => {
-        return creep.pos.getRangeTo(spawn) < 2 &&
+        return creep.pos.isNearTo(spawn) &&
           creep.memory.um &&
           creep.memory.um.stage === 'recycle'
       }

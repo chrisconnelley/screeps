@@ -1,5 +1,6 @@
 var util = require('util');
 var locator = require('locator');
+var mc = require('util.memory.creep')
 
 
 var shared = {
@@ -14,6 +15,18 @@ var shared = {
     // if (creep.fatigue && creep.pos.lookFor(LOOK_STRUCTURES).length === 0) {
     //   creep.room.createConstructionSite(creep.pos.x, creep.pos.y, STRUCTURE_ROAD);
     // } 
+  },
+  transfer: function(creep, target) {
+    const u = util;
+    u.log(`[role.shared transfer] creep: ${creep} target: ${target}`);
+
+    u.log(`[role.shared transfer] creep.store ${JSON.stringify(creep.store)}`);
+
+    var typeResources = Object.keys(creep.store);
+    
+    u.log(`typeResources ${typeResources}`);
+    
+    return creep.transfer(target, typeResources[0]);
   },
   depositResource: function(creep) {
     const u = util;
@@ -135,6 +148,10 @@ var shared = {
     }
   },
   gatherEnergy: function (creep, source) {
+    const u = util;
+    
+    if (!creep || !source) return;
+    
     var result;
     result = creep.harvest(source);
 
@@ -143,17 +160,27 @@ var shared = {
     }
 
     if (result === ERR_INVALID_TARGET || result === ERR_NO_BODYPART) {
-      result = creep.withdraw(source, RESOURCE_ENERGY);
-      util.log(creep.memory.role + " " + creep.name + " withdraw from " + source + " with result " + util.errorCodeToDisplay(result));
+        if (source.store) {
+              var typeResources = Object.keys(source.store);
+              result = creep.withdraw(source, typeResources[0]);
+              u.log(`creep.memory.role ${creep.name} withdraw ${typeResources[0]} from ${source} with result ${util.errorCodeToDisplay(result)}`);
+        }
     }
 
     if (result !== OK && result !== ERR_NOT_IN_RANGE) {
-      util.log("Gather attempt by " + creep + " from " + source + " result: " + util.errorCodeToDisplay(result));
+      u.log(`Gather attempt by ${creep} from ${source} result: ${util.errorCodeToDisplay(result)}`);
     }
 
     return result;
   },
-  checkRecycle: function (nameCreep, stage, setStage) {
+  checkRecycle: function (nameCreep) {
+    var creep = Game.creeps[nameCreep];
+    
+    if (creep.ticksToLive < 100) {
+      mc.setStage(nameCreep, 'recycle');
+    }
+  },
+  recycleStage: function(nameCreep) {
     var creep = Game.creeps[nameCreep];
     var spawnRenew = creep.pos.findClosestByPath(FIND_MY_SPAWNS);
 
@@ -161,41 +188,47 @@ var shared = {
       return false;
     }
 
-    if (creep.ticksToLive < 100) {
-      setStage(nameCreep, 'recycle');
-      this.displayBadge(creep, '💀');
+    this.displayBadge(creep, '💀');
 
-      creep.transfer(spawnRenew, RESOURCE_ENERGY);
-    }
+    var result = creep.transfer(spawnRenew, RESOURCE_ENERGY);
+    var desc = `Transfer from creep ${creep} to spawn ${spawnRenew}`;
 
-    if (stage(nameCreep) === 'recycle') {
-      creep.moveTo(spawnRenew, {
+    if (result === ERR_NOT_IN_RANGE) {
+      result = creep.moveTo(spawnRenew, {
         visualizePathStyle: {
           stroke: '#ffffff'
         }
       });
-      return true;
+      desc = `Move creep ${creep} to spawn ${spawnRenew}`;
     }
-  },
-  checkRenew: function (nameCreep, nameStageAfterRenew, setStage, stage) {
-    var creep = Game.creeps[nameCreep];
-    var spawnRenew = creep.pos.findClosestByPath(FIND_MY_SPAWNS);
 
+    return { 
+      result: result,
+      code: util.errorCodeToDisplay(result),
+      desc: desc
+    };
+  },
+  checkRenew: function (nameCreep, nameStageAfterRenew) {
+    // return;
+    var creep = Game.creeps[nameCreep];
+    // var spawnRenew = util.pickRandom(creep.room.find(FIND_MY_SPAWNS));
+    var spawnRenew = creep.pos.findClosestByPath(FIND_MY_SPAWNS);
+    
     if (!creep || !spawnRenew) {
       return false;
     }
 
     if (creep.ticksToLive < 300 && spawnRenew.energy > 0) {
-      setStage(nameCreep, 'renew');
+      mc.setStage(nameCreep, 'renew');
       this.displayBadge(creep, '💀');
 
       creep.transfer(spawnRenew, RESOURCE_ENERGY);
 
     }
 
-    if (stage(nameCreep) === 'renew') {
+    if (mc.getStage(nameCreep) === 'renew') {
       if (creep.ticksToLive > 1400 || spawnRenew.energy < 10) {
-        setStage(nameCreep, nameStageAfterRenew);
+        mc.setStage(nameCreep, nameStageAfterRenew);
         return false;
       }
       creep.moveTo(spawnRenew, {
@@ -222,7 +255,7 @@ var shared = {
         }
       });
     }
-  }
+  }  
 }
 
 module.exports = shared;

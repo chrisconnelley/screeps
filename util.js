@@ -1,6 +1,27 @@
 var util = {
   debug: false,
+  namePlayer: 'NeteruOsmosis',
+  countdown: function(seconds) {
+    var secondsRemaining = seconds;
+    var days = parseInt(seconds/(3600*24));
+    
+    secondsRemaining = secondsRemaining - (days * 3600*24);
+    var hours = parseInt(secondsRemaining/3600);
+    
+    secondsRemaining = secondsRemaining - (hours * 3600);
+    var minutes = parseInt(secondsRemaining/60);
 
+    secondsRemaining = secondsRemaining - (minutes * 60);
+
+    var result = '';
+
+    result += days > 0 ? `${days}d` : '';
+    result += hours > 0 ? `${hours}h` : '';
+    result += minutes > 0 ? `${minutes}m` : '';
+    result += `${secondsRemaining}s`;
+
+    return result;
+  },
   convertRoomToXY: function (roomName) {
     var splitRoomName, x, y;
     if (roomName.includes("N")) {
@@ -26,6 +47,9 @@ var util = {
   },
   distance: function (a, b) {
     return a * a + b * b;
+  },
+  distanceCheapest: function(a,b) {
+    return a + b;
   },
   errorCodeToDisplay(errorCode) {
     switch (errorCode) {
@@ -92,14 +116,41 @@ var util = {
 
     return memoryOwner.username;
   },
+  getRoomReservedBy: function(nameRoom) {
+    var memoryRoom = Memory.colony.rooms[nameRoom];
+
+    if (!memoryRoom) return null;
+
+    var memoryController = memoryRoom.controller;
+
+    if (!memoryController) return null;
+
+    var memoryReservation = memoryController.reservation;
+
+    if (!memoryReservation) return null;
+
+    return memoryReservation.username;
+  },
   isRoomMine: function (nameRoom) {
-    return this.getRoomOwner(nameRoom) === 'NeteruOsmosis';
+    return this.getRoomOwner(nameRoom) === this.namePlayer || this.getRoomReservedBy(nameRoom) === this.namePlayer;
+  },
+  isRoomRemoteAndFree: function (nameRoom) {
+    if (this.getRoomOwner(nameRoom) === this.namePlayer) return false; 
+    
+    var nameRoomReservedBy = this.getRoomReservedBy(nameRoom);
+    if (nameRoomReservedBy === this.namePlayer || !nameRoomReservedBy) return true;
   },
   log: function(message) {
     if (this.debug) {
       console.log(message);
     }
   },
+  pickRandom: function (array) {
+    const u = util;
+    var i = parseInt(Math.random()*array.length);
+    u.log(`array: ${array} i: ${i}`);
+    return array[i];
+  }
 };
 
 module.exports = util;

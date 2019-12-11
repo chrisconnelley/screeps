@@ -8,8 +8,8 @@ var roleHarvester = {
     mc.setStage(creep.name, 'harvest');
   },
   run: function (creep) {
-    const u = util;
-    u.log(`[role.harvester run] creep: ${creep}`);
+    // const u = util;
+    // u.log(`[role.harvester run] creep: ${creep}`);
     if (creep.spawning) {
       this.init(creep);
       return;
@@ -22,24 +22,24 @@ var roleHarvester = {
     
     var sitesConstruction = creep.room.find(FIND_MY_CONSTRUCTION_SITES);
     if (sitesConstruction.length > 0) {
-      u.log(`[role.harvester run] creep: ${creep} found construction sites (${sitesConstruction.length} swithching to builder)`);
+      // u.log(`[role.harvester run] creep: ${creep} found construction sites (${sitesConstruction.length} swithching to builder)`);
       creep.memory.role = 'builder';
     }
 
     if (mc.getStage(creep.name) === 'harvest') {
-      u.log(`[role.harvester run] creep: ${creep} harvest`);
+      // u.log(`[role.harvester run] creep: ${creep} harvest`);
       this.harvest(creep);
     } else {
-      u.log(`[role.harvester run] creep: ${creep} deliver`);
+      // u.log(`[role.harvester run] creep: ${creep} deliver`);
       this.deliver(creep);
     }
   },
   harvest: function(creep) {
-    const u =  util;
+    // const u =  util;
     var closest_energy; 
   
     if (!closest_energy) closest_energy = locator.findClosestEnergy(creep);
-    u.log(`harvest: ${closest_energy}`);
+    // u.log(`harvest: ${closest_energy}`);
     if (!closest_energy) closest_energy = locator.findClosestMineral(creep);
     var resultGather = shared.gatherEnergy(creep, closest_energy);
 
@@ -57,14 +57,15 @@ var roleHarvester = {
     }
   },
   deliver: function(creep) {      
-    const u =  util;
+    // const u =  util;
     if (creep.store[RESOURCE_ENERGY] === 0) {
-      u.log("Harvester (" + creep + ") is empty. Switching to harvest");
+      // u.log("Harvester (" + creep + ") is empty. Switching to harvest");
       mc.setStage(creep.name, 'harvest');
       return;
     }
 
     var target;
+    target = locator.findRefuelTarget(creep);
     //  = creep.pos.findClosestByPath(FIND_STRUCTURES, {
     //   filter: (structure) => {
     //     return (
@@ -83,18 +84,18 @@ var roleHarvester = {
              && structure.store.getFreeCapacity() > 0);  
         }
       });
-      u.log(`Harvester looking for storage to deliver to: ${target}`);
+      // u.log(`Harvester looking for storage to deliver to: ${target}`);
     
-      if (!target) {
-        u.log("All containers are full!");
-      }
+      // if (!target) {
+      //   u.log("All containers are full!");
+      // }
     }
 
     if (target) {
       var resultTransfer = creep.transfer(target, RESOURCE_ENERGY);
-      if (resultTransfer !== 0 && resultTransfer !== ERR_NOT_IN_RANGE) {
-        util.log("resultTransfer (" + creep + ") to (" + target + "): " + util.errorCodeToDisplay(resultTransfer));
-      }
+      // if (resultTransfer !== 0 && resultTransfer !== ERR_NOT_IN_RANGE) {
+      //   util.log("resultTransfer (" + creep + ") to (" + target + "): " + util.errorCodeToDisplay(resultTransfer));
+      // }
       if (resultTransfer == ERR_NOT_IN_RANGE) {
         creep.moveTo(target, {
           visualizePathStyle: {

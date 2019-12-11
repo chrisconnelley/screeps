@@ -58,7 +58,7 @@ var control = {
 
     return this.spawn(nameSpawn, nameCreep, bodyPartsSpawn, role);
   },
-  // Spawn Claiumer
+  // Spawn Claimer
   sC: function (nameSpawn, energy) {
     const u = util;
     const role = 'claimer';
@@ -129,21 +129,50 @@ var control = {
     }, 'transport');
   },
   sR: function (nameSpawn, energy) {
-    var parts = Math.floor(energy / 100);
-    return this.spawnShort(nameSpawn, 'W' + Game.time, {
-      'carry': parts,
-      'move': parts
-    }, 'refueler');
+    const u = util;
+    const role = 'refueler';
+    const prefixNameCreep = 'R';
+    const countPartsSectionTemplate = 2;
+    const costBodySectionTemplate = 50 + 50;
+    var countParts = Math.floor(energy / costBodySectionTemplate);
+    if (countParts * countPartsSectionTemplate > 50) {
+      countParts = parseInt(50 / countPartsSectionTemplate);
+    }
+    const parts = {
+      'carry': countParts,
+      'move': countParts 
+    };
+    const nameCreep = prefixNameCreep + Game.time;
+
+    // u.log(`[control sC] nameSpawn: ${nameSpawn} energy: ${energy}`);
+    // u.log(`[control sC] nameCreep: ${nameCreep} parts: ${JSON.stringify(parts)} role: ${role}`);
+
+    const result = this.spawnShort(nameSpawn, nameCreep, parts, role);
+
+    return result !== OK || nameCreep;
   },
   sJ: function (nameSpawn, energy) {
-    var parts = Math.floor(energy / 100);
-    if (parts * 2 > 50) {
-      parts = parseInt(50 / 2);
+    const u = util;
+    const role = 'janitor';
+    const prefixNameCreep = 'J';
+    const countPartsSectionTemplate = 2;
+    const costBodySectionTemplate = 50 + 50;
+    var countParts = Math.floor(energy / costBodySectionTemplate);
+    if (countParts * countPartsSectionTemplate > 50) {
+      countParts = parseInt(50 / countPartsSectionTemplate);
     }
-    return this.spawnShort(nameSpawn, 'J' + Game.time, {
-      'carry': parts,
-      'move': parts
-    }, 'janitor');
+    const parts = {
+      'carry': countParts,
+      'move': countParts 
+    };
+    const nameCreep = prefixNameCreep + Game.time;
+
+    // u.log(`[control sC] nameSpawn: ${nameSpawn} energy: ${energy}`);
+    // u.log(`[control sC] nameCreep: ${nameCreep} parts: ${JSON.stringify(parts)} role: ${role}`);
+
+    const result = this.spawnShort(nameSpawn, nameCreep, parts, role);
+
+    return result !== OK || nameCreep;
   },
   // Spawn Miner
   sM: function(nameSpawn, energy) {

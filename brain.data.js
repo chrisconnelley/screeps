@@ -105,7 +105,7 @@ var brainData = {
     return amountTotal/(arrayData.length-1);
   },
   recordRoom: function(nameRoom) {
-    const u = console;
+    const u = util;
     u.log(`[brain.data recordRoom] nameRoom: ${nameRoom}`);
     
     

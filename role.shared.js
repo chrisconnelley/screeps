@@ -227,7 +227,7 @@ var shared = {
     }
 
     if (mc.getStage(nameCreep) === 'renew') {
-      if (creep.ticksToLive > 1400 || spawnRenew.energy < 10) {
+      if (creep.ticksToLive > 1400 || spawnRenew.energy < 10 || spawnRenew.spawning) {
         mc.setStage(nameCreep, nameStageAfterRenew);
         return false;
       }

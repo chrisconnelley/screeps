@@ -14,6 +14,9 @@ var control = {
 
     return haveAllTestsPassed;
   },
+  runTest: function(nameTest) {
+    return tests[nameTest]();
+  },
   assignSource: function(nameCreep, idSource) {
     const u = util;
     u.log(`[control assignSource] nameCreep: ${nameCreep} idSource: ${idSource}`);

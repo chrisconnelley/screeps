@@ -28,7 +28,8 @@ task: {
 
 var brainTasks = {
   typeTasksAllowed: [
-    'deliver'
+    'deliver',
+    'speak'
   ],
   sourcesPossible: [
     'storage',
@@ -74,6 +75,25 @@ var brainTasks = {
     memory.tasks.push(task);
 
     return idTaskNew;
+  },
+  loadTask: function(udTask) {
+    var task = {};
+
+    task = memory.tasks[idTask];
+
+    if (!task || task.id) return null;
+
+    return task;
+  },
+  performTaskSpeak: function(idTask) {
+    const task = loadTask(idTask);
+    const creep = Game.creeps[nameCreep];
+
+    if (!creep) recycleTask(idTask);
+
+  },
+  recycleTask: function(idTask) {
+    const task = loadTask(idTask);
   },
   completeTask: function(idTask, nameCreep) {
     

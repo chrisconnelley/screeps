@@ -37,6 +37,8 @@ var hud = {
     status.push(`Dropped ⚡: ${amountEnergyDropped}`);
     status.push(`Stored ⚡: ${amountEnergyStored} / ${amountEnergyStoredAverage}`);
 
+    this.loadOtherRooms(nameRoom, status);
+
     var numberLine = 0;
     status.forEach((statusLine) => {
       room.visual.text(statusLine, 2, 2+(numberLine++), {
@@ -45,8 +47,18 @@ var hud = {
         align: 'left'
       });
     })
+  },
+  loadOtherRooms: function(nameRoom, status) {
+    status.push('');
 
-  }
+    var rooms = Game.rooms;
+
+    _.forIn(rooms, (room) => {
+      status.push(`${room.name}: ${room.energyAvailable}/${room.energyCapacityAvailable} ${room.find(FIND_MY_CREEPS).length}`);
+      status.push(`${locator.getAmountDroppedResources(room.name)} ${brainData.getValueLast(Memory.colony.rooms[room.name], 'energyStored')}`)
+    });
+
+  } 
 }
 
 module.exports = hud;

@@ -1,5 +1,6 @@
 var roleBuilder = require('role.builder');
 var roleClaimer = require('role.claimer');
+var roleAttacker = require('role.attacker');
 var roleDefender = require('role.defender');
 var roleExcavator = require('role.excavator');
 var roleHarvester = require('role.harvester');
@@ -9,6 +10,7 @@ var roleRefueler = require('role.refueler');
 var roleTransport = require('role.transport');
 var roleUpgrader = require('role.upgrader');
 var shared = require('role.shared');
+var roleWrecker = require('role.wrecker');
 
 var brainCreeps = {
   run: function() {
@@ -50,6 +52,12 @@ var brainCreeps = {
       }
       if (creep.memory.role === 'janitor') {
         roleJanitor.run(creep);
+      }
+      if (creep.memory.role === 'attacker') {
+        roleAttacker.run(creep);
+      }
+      if (creep.memory.role === 'wrecker') {
+        roleWrecker.run(creep);
       }
   }
   }

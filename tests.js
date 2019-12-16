@@ -3,6 +3,89 @@ var utilTests = require('util.tests');
 const brainTasks = require('brain.tasks');
 
 var tests = {
+  test_runTest: function() {
+    const name = `runTest`;
+
+    const tests = [
+      {
+        'functionTest': () => utilTests.runTest(() => true),
+        'expectionTest': (resultTest) => utilTests.expect(resultTest, true)
+      },
+      {
+        'functionTest': () => utilTests.runTest(() => false),
+        'expectionTest': (resultTest) => utilTests.expect(resultTest, false)
+      },
+      {
+        'functionTest': () => utilTests.runTest((a, b) => a+b, [4,9]),
+        'expectionTest': (resultTest) => utilTests.expect(resultTest, 13)
+      }
+    ];
+
+    return utilTests.runTestSet(name, tests);
+  },
+  test_expect: function() {
+    const name = `expect`;
+
+    const tests = [
+      {
+        'functionTest': () => utilTests.expect(true, false),
+        'expectionTest': (resultTest) => resultTest() === false
+      },
+      {
+        'functionTest': () => utilTests.expect(false, false),
+        'expectionTest': (resultTest) => resultTest() === true
+      },
+      {
+        'functionTest': () => utilTests.expect(false, true),
+        'expectionTest': (resultTest) => resultTest() === false
+      },
+      {
+        'functionTest': () => utilTests.expect(true, true),
+        'expectionTest': (resultTest) => resultTest() === true
+      },
+      {
+        'functionTest': () => utilTests.expect(() => true, true),
+        'expectionTest': (resultTest) => resultTest() === true
+      }
+    ];
+
+    return utilTests.runTestSet(name, tests);
+  },
+  test_haveAllPassed: function() {
+    const name = `haveAllPassed`;
+
+    const tests = [
+      {
+        'functionTest': () => utilTests.haveAllPassed([true, true, true, true]),
+        'expectionTest': (resultTest) => resultTest() === true
+      },
+      {
+        'functionTest': () => utilTests.haveAllPassed([true, false, true, true]),
+        'expectionTest': (resultTest) => resultTest() === false
+      },
+      {
+        'functionTest': () => utilTests.haveAllPassed([false, false, false, false]),
+        'expectionTest': (resultTest) => resultTest() === false
+      },
+    ];
+
+    return utilTests.runTestSet(name, tests);
+  },
+  // test_expectException: function() {
+  //   console.log(`[test_expectException] Start`);
+  //   var hasAllPassingTests = true;
+
+  //   const test_01 = () => utilTests.haveAllPassed('bob');
+
+  //   var expect_test_01 = utilTests.expectNew()
+  //   console.log(`[test_expect] utilTests.test_expectException(test_01(): ${expect_test_01}`);
+
+
+  //   console.log(`[test_expectException] End`);
+  //   console.log(``);
+    
+  //   return hasAllPassingTests;
+  // },
   test_getOrCreateMemoryObject: function() {
     var hasAllPassingTests = true;
     
@@ -121,16 +204,43 @@ var tests = {
     return hasAllPassingTests;
   },
   test_brainTasks_createTask: function() {
+    const name = `test_brainTasks_createTask`;
+
+    const tests = [
+      {
+        'functionTest': () => utilTests.haveAllPassed([true, true, true, true]),
+        'expectionTest': (resultTest) => resultTest() === true
+      },
+      {
+        'functionTest': () => utilTests.haveAllPassed([true, false, true, true]),
+        'expectionTest': (resultTest) => resultTest() === false
+      },
+      {
+        'functionTest': () => utilTests.haveAllPassed([false, false, false, false]),
+        'expectionTest': (resultTest) => resultTest() === false
+      },
+    ];
+
+    return utilTests.runTestSet(name, tests);
+    
+    
     var hasAllPassingTests = true;
 
     console.log(``);
     console.log(`Testing brainTasks createTasks:`);
 
-    const idTaskGlobal = brainTasks.idTaskGlobal;
-
     const typeTaskValid = 'deliver';
     const targetStartValid = Game.spawns['Spawn1'];
 
+    const targetStartInvalid = '';
+
+    const idTaskValid = brainTasks.createTask(typeTaskValid, targetStartValid, targetStartEnd, quantity, nameCreepAssigned);
+
+    var expect_test_01a = utilTests.expect(typeof idTaskValid, 'string');
+
+
+    hasAllPassingTests = utilTests.haveAllPassed([expect_test_01a]);
+    return hasAllPassingTests;
   }
 };
 

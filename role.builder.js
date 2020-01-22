@@ -32,10 +32,10 @@ var roleBuilder = {
     }
   },
   harvest: function(creep) {
-    const u =  util;
+    const u =  console;
     var closest_energy; 
   
-    if (!closest_energy) closest_energy = locator.findClosestStore(creep);
+    if (!closest_energy) closest_energy = locator.findClosestStoreEnergy(creep);
 
     if (!closest_energy) closest_energy = locator.findClosestEnergy(creep);
     u.log(`harvest: ${closest_energy}`);

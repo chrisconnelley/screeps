@@ -49,7 +49,7 @@ var util = {
     return a * a + b * b;
   },
   distanceCheapest: function(a,b) {
-    return a + b;
+    return Math.abs(a) + Math.abs(b);
   },
   errorCodeToDisplay(errorCode) {
     switch (errorCode) {

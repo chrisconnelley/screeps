@@ -16,7 +16,7 @@ var brainRoom = {
     var memoryController = memoryRoom.controller;
     var isUpgraderOld = false;
 
-    if (!memoryController) return;
+    if (!memoryController || memoryController.level === 8) return;
 
     var nameUpgrader = memoryController.nameUpgrader;
 
@@ -105,8 +105,6 @@ var brainRoom = {
   },
   checkSource: function (nameRoom, idSource) {
     var u = util;
-
-    if (nameRoom === 'E4N43') u = console;
 
     var memoryRoom = Memory.colony.rooms[nameRoom];
     var memorySources = memoryRoom.sources;
@@ -340,12 +338,12 @@ var brainRoom = {
       this.checkSource(nameRoom, source.id);
     });
 
-    var minerals = room.find(FIND_MINERALS); // Find all the sources
-    minerals.forEach((mineral) => {
-      u.log(`${nameRoom} mineral: ${mineral.id}`)
-      map.mapMineral(mineral);
-      this.checkMineral(nameRoom, mineral.id);
-    });
+    // var minerals = room.find(FIND_MINERALS); // Find all the sources
+    // minerals.forEach((mineral) => {
+    //   u.log(`${nameRoom} mineral: ${mineral.id}`)
+    //   map.mapMineral(mineral);
+    //   this.checkMineral(nameRoom, mineral.id);
+    // });
 
     this.findResources(nameRoom);
   },

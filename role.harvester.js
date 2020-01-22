@@ -38,6 +38,9 @@ var roleHarvester = {
     // const u =  util;
     var closest_energy; 
   
+    closest_energy = locator.findAssignedSource(creep);
+    console.log(`creep: ${creep} closest_energy assigned: ${closest_energy} ${creep.memory.um.source}`)
+  
     if (!closest_energy) closest_energy = locator.findClosestEnergy(creep);
     // u.log(`harvest: ${closest_energy}`);
     if (!closest_energy) closest_energy = locator.findClosestMineral(creep);

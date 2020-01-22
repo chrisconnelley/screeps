@@ -46,9 +46,7 @@ var roleJanitor = {
     */
     var target = locator.findBestResource(creep);
 
-    // if (!target) {
-    //   target = locator.findContainer(creep);
-    // }
+    if (!target) target = locator.findClosestEnergy(creep);
 
     u.log(`[role.janitor clean] creep: ${creep} target: ${target}`);
     var resultGather = shared.gatherEnergy(creep, target);
@@ -60,7 +58,7 @@ var roleJanitor = {
       });
     }
 
-    if (creep.store.getFreeCapacity() === 0 || !target ) {
+    if (creep.store.getFreeCapacity() === 0) {
         mc.setStage(creep.name, 'deliver');
         this.deliver(creep);
       }

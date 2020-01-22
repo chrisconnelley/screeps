@@ -58,7 +58,7 @@ var roleTransport = {
         creep.store.getUsedCapacity() > 0
       ) {
         u.log(`[role.transport perform] depositing resources`);
-        shared.depositResource(creep);
+        shared.depositResources(creep);
       }
 
       return;

@@ -39,7 +39,11 @@ var towers = {
 
     var targetsAttack = tower.room.find(FIND_HOSTILE_CREEPS);
 
+    //console.log(`[towerAttack] tower: ${tower} targetsAttack: ${targetsAttack}.`);
+
     if (targetsAttack.length > 0) {
+      console.log(targetsAttack[0]);
+      
       return tower.attack(targetsAttack[0]);        
     }
   },

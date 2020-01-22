@@ -32,7 +32,7 @@ var shared = {
     const u = util;
     container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
       filter: (structure) => {
-        return ((structure.structureType == STRUCTURE_CONTAINER || 
+        return ((structure.structureType == STRUCTURE_TERMINAL || 
           structure.structureType == STRUCTURE_STORAGE
           ) && structure.store.getFreeCapacity() > 0);
       }
@@ -66,7 +66,7 @@ var shared = {
     return false;  
   },
   retrieveEnergy: function (creep) {
-    var closest_energy = locator.findClosestStore(creep);
+    var closest_energy = locator.findClosestStoreEnergy(creep);
     if (!closest_energy) {
       closest_energy = locator.findClosestEnergy(creep);
     }
@@ -79,6 +79,24 @@ var shared = {
         }
       });
     }
+
+    return resultGather;
+  },
+  collectResource: function (creep, typeResource) {
+    // var resourceClosest = locator.findClosestResource(creep, typeResource);
+    // var resultGather = this.gatherResource(creep, resourceClosest);
+
+    // if (resultGather == ERR_NOT_IN_RANGE) {
+    //   creep.moveTo(resourceClosest, {
+    //     visualizePathStyle: {
+    //         fill: 'transparent',
+    //         stroke: '#0000ff',
+    //         lineStyle: 'solid',
+    //         strokeWidth: .35,
+    //         opacity: .5
+    //     }
+    //   });
+    // }
 
     return resultGather;
   },
@@ -100,7 +118,51 @@ var shared = {
 
     return "forgot source for " + creep
   },
-  depositResource: function (creep) {
+  deliverResource: function(creep, target, typeResource, amount) {
+    const u = console;
+    // u.log(`deliverResource: ${creep} ${target}`);
+
+    var targetObject = Game.getObjectById(target);
+
+    if (creep.pos.isNearTo(targetObject)) {
+      var result = creep.transfer(targetObject, typeResource, parseInt(amount));
+      // console.log(`result: ${creep} ${result} ${targetObject} ${typeResource} ${amount}`);
+      return result;
+    } else {
+      // u.log(`Not close enough to target: ${JSON.stringify(targetObject)}`)
+      creep.moveTo(targetObject, {
+        visualizePathStyle: {
+            fill: 'transparent',
+            stroke: '#0000ff',
+            lineStyle: 'solid',
+            strokeWidth: .35,
+            opacity: .5
+        }
+      });
+      return ERR_NOT_IN_RANGE;
+    }
+  },
+  collectResource: function(creep, typeResource, amount) {
+    const storage = creep.room.storage;
+
+    if (!storage) return ERR_NOT_FOUND;
+
+    if (creep.pos.isNearTo(storage)) {
+      var result = creep.withdraw(storage, typeResource, amount);
+      console.log(`result: ${result}`);
+    } else {
+      creep.moveTo(storage, {
+        visualizePathStyle: {
+            fill: 'transparent',
+            stroke: '#0000ff',
+            lineStyle: 'solid',
+            strokeWidth: .35,
+            opacity: .5
+        }
+      });
+    }
+  },
+  depositResources: function (creep) {
     containers = creep.room.find(FIND_STRUCTURES, {
       filter: (structure) => {
         return ((structure.structureType == STRUCTURE_STORAGE) && structure.store.getFreeCapacity() > 0);
@@ -209,6 +271,7 @@ var shared = {
     };
   },
   checkRenew: function (nameCreep, nameStageAfterRenew) {
+    const u = util;
     // return;
     var creep = Game.creeps[nameCreep];
     // var spawnRenew = util.pickRandom(creep.room.find(FIND_MY_SPAWNS));
@@ -226,6 +289,7 @@ var shared = {
 
     }
 
+    u.log(`checkRenew stage: ${nameCreep} ${mc.getStage(nameCreep)}`);
     if (mc.getStage(nameCreep) === 'renew') {
       if (creep.ticksToLive > 1400 || spawnRenew.energy < 10 || spawnRenew.spawning) {
         mc.setStage(nameCreep, nameStageAfterRenew);
@@ -238,6 +302,8 @@ var shared = {
       });
       return true;
     }
+
+    return false;
   },
   transferEnergyOrMoveTo: function (creep, target) {
     const u = util;

@@ -20,6 +20,10 @@ module.exports.loop = function () {
   cleanup.run();
   // brainData.recordData(Memory.game, 'cpuUsed_cleanup', Game.cpu.getUsed(), 10);
 
+  if (true || Game.time % 3 != 0) {
+
+  
+
   brainColony.run();
   // brainData.recordData(Memory.game, 'cpuUsed_colony', Game.cpu.getUsed(), 10);
   brainCreeps.run();
@@ -39,6 +43,9 @@ module.exports.loop = function () {
   // brainData.recordData(Memory.game, 'cpuUsed_end', Game.cpu.getUsed(), 10);
 
   // console.log(`Total: ${brainData.getValueLast(Memory.game, 'cpuUsed_end')}`);
+  
+    //   brainTasks.processTasks();
+  }
   
   console.log(`Game tick: ${timeGame} END`);
   console.log();  

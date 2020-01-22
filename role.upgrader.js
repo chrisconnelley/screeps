@@ -8,8 +8,13 @@ var roleUpgrader = {
     shared.displayBadge(creep, 'U');
     var stage = mc.getStage(creep.name);
 
+
+    if (shared.checkShouldDeposit(creep)) return;
+
+
     if (shared.checkRenew(creep.name, 'gathering', mc.setStage, mc.getStage)) return;
     // if (shared.checkRecycle(creep.name, mc.getStage, mc.setStage)) return;
+
 
     if (stage == 'upgrading' && creep.carry.energy == 0) {
       mc.setStage(creep.name,'gathering');

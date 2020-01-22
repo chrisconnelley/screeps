@@ -24,14 +24,14 @@ var hud = {
     var amountEnergyStored = brainData.getValueLast(Memory.colony.rooms[nameRoom], 'energyStored');
     var amountEnergyStoredAverage = brainData.getAverageDiff(Memory.colony.rooms[nameRoom], 'energyStored').toFixed(2);
 
-    if (controller && controller.my) {
+    if (controller && controller.my && controller.level !== 8) {
       energyToControllerUpgrade = controller.progressTotal - controller.progress;
       progressRCLAverage = brainData.getAverageDiff(Memory.colony.rooms[nameRoom].controller, 'Progress');
       if (progressRCLAverage !== 0) {
         secondsToUpgrade = energyToControllerUpgrade / progressRCLAverage;
         secondsToUpgrade = parseInt(secondsToUpgrade * lengthTickInMs / 1000);
       }
-        status.push(`RCL upgrade time: ${util.countdown(-secondsToUpgrade)} (${-secondsToUpgrade}s) ${progressRCLAverage.toFixed(2)} per tick`);
+        status.push(`RCL upgrade time: ${util.countdown(-secondsToUpgrade)} (${energyToControllerUpgrade} / ${-secondsToUpgrade}s) ${progressRCLAverage.toFixed(2)}/t`);
     }
 
     status.push(`Dropped ⚡: ${amountEnergyDropped}`);
@@ -54,8 +54,12 @@ var hud = {
     var rooms = Game.rooms;
 
     _.forIn(rooms, (room) => {
-      status.push(`${room.name}: ${room.energyAvailable}/${room.energyCapacityAvailable} ${room.find(FIND_MY_CREEPS).length}`);
-      status.push(`${locator.getAmountDroppedResources(room.name)} ${brainData.getValueLast(Memory.colony.rooms[room.name], 'energyStored')}`)
+        if (room.energyCapacityAvailable > 0) {
+          status.push(`${room.name}: ⚡ ${room.energyAvailable} / ${room.energyCapacityAvailable} | Creeps: ${room.find(FIND_MY_CREEPS).length}`);
+          status.push(`Floor ⚡${locator.getAmountDroppedResources(room.name)} | Bank ⚡${brainData.getValueLast(Memory.colony.rooms[room.name], 'energyStored')}`)
+          status.push(`RCL: ${room.controller.level} | Til next: ${room.controller.progressTotal - room.controller.progress}`);
+          status.push('')
+        }
     });
 
   } 

@@ -1,37 +1,34 @@
-var util = require('util');
 var tests = require('tests');
+var mc = require('util.memory.creep');
 
 var control = {
   runTests: function () {
     var haveAllTestsPassed = true;
     _.forIn(tests, (testFunction, testFunctionName) => {
       var resultTest = testFunction();
-
-      console.log(`${testFunctionName}: ${resultTest}`);
-
+      
       haveAllTestsPassed = resultTest && haveAllTestsPassed;
     });
 
     return haveAllTestsPassed;
   },
+  killAll: function(nameRoom) {
+    // TODO: if supplied, only kill all the creeps in the room with roomName
+    Object.keys(Game.creeps).forEach(creepName => {
+        Game.creeps[creepName].suicide()
+    })
+  },
   runTest: function(nameTest) {
     return tests[nameTest]();
   },
   assignSource: function(nameCreep, idSource) {
-    const u = util;
-    u.log(`[control assignSource] nameCreep: ${nameCreep} idSource: ${idSource}`);
-    
+            
     var creep = Game.creeps[nameCreep];
-    
     if (!creep) return;
-    
     creep.memory.sourceId = idSource; 
   },
   clearMap: function () {
     delete Memory.colony;
-  },
-  setMemory: function (nameCreep, keyMemory, valueMemory) {
-
   },
   assignRole: function (nameCreep, roleNew) {
     var creep = Game.creeps[nameCreep];
@@ -40,8 +37,6 @@ var control = {
     return "Creep named " + nameCreep + " assigned role: " + roleNew;
   },
   spawn: function (nameSpawn, nameCreep, bodyParts, role) {
-    util.log("Spawning " + nameCreep + " with [" + bodyParts + "] and role of " + role);
-
     var result = Game.spawns[nameSpawn].spawnCreep(bodyParts, nameCreep, {
       memory: {
         role: role
@@ -63,8 +58,7 @@ var control = {
   },
   // Spawn Claimer
   sC: function (nameSpawn, energy) {
-    const u = util;
-    const role = 'claimer';
+        const role = 'claimer';
     const prefixNameCreep = 'CC';
     const countPartsSectionTemplate = 3;
     const costBodySectionTemplate = 600 + 50 + 50;
@@ -78,9 +72,7 @@ var control = {
     };
     const nameCreep = prefixNameCreep + Game.time;
 
-    u.log(`[control sC] nameSpawn: ${nameSpawn} energy: ${energy}`);
-    u.log(`[control sC] nameCreep: ${nameCreep} parts: ${JSON.stringify(parts)} role: ${role}`);
-
+        
     const result = this.spawnShort(nameSpawn, nameCreep, parts, role);
 
     return {
@@ -88,7 +80,14 @@ var control = {
       nameCreep: nameCreep
     }
   },
-  sA: function (nameSpawn, energy) {
+  sAttack: function (nameSpawn, energy) {
+    if (energy === undefined) {
+      var spawn = Game.spawns[nameSpawn];
+      if (spawn) {
+        energy = spawn.room.energyAvailable;
+      }
+    }
+
     const countPartsSectionTemplate = 4;
     const costBodySectionTemplate = 80 + 10 + 50 + 50;
     var countParts = Math.floor(energy / costBodySectionTemplate);
@@ -96,11 +95,21 @@ var control = {
       countParts = parseInt(50 / countPartsSectionTemplate);
     }
 
-    return this.spawnShort(nameSpawn, 'A' + Game.time, {
+    const nameCreep = 'A' + Game.time;
+
+    var result = this.spawnShort(nameSpawn, nameCreep, {
       'tough': countParts,
       'attack': countParts,
       'move': countParts * 2
     }, 'attacker');
+      
+    mc.setStage(nameCreep, 'attack');
+
+    if (!Game.creeps[nameCreep]) {
+      return 'ERROR';
+    }
+
+    return nameCreep;
   },
   sU: function (nameSpawn, energy, nameCreep) {
     const countPartsSectionTemplate = 4;
@@ -132,8 +141,7 @@ var control = {
     }, 'transport');
   },
   sR: function (nameSpawn, energy) {
-    const u = util;
-    const role = 'refueler';
+        const role = 'refueler';
     const prefixNameCreep = 'R';
     const countPartsSectionTemplate = 2;
     const costBodySectionTemplate = 50 + 50;
@@ -146,17 +154,12 @@ var control = {
       'move': countParts 
     };
     const nameCreep = prefixNameCreep + Game.time;
-
-    // u.log(`[control sC] nameSpawn: ${nameSpawn} energy: ${energy}`);
-    // u.log(`[control sC] nameCreep: ${nameCreep} parts: ${JSON.stringify(parts)} role: ${role}`);
-
     const result = this.spawnShort(nameSpawn, nameCreep, parts, role);
 
     return result !== OK || nameCreep;
   },
   sJ: function (nameSpawn, energy) {
-    const u = util;
-    const role = 'janitor';
+        const role = 'janitor';
     const prefixNameCreep = 'J';
     const countPartsSectionTemplate = 2;
     const costBodySectionTemplate = 50 + 50;
@@ -169,18 +172,16 @@ var control = {
       'move': countParts 
     };
     const nameCreep = prefixNameCreep + Game.time;
-
-    // u.log(`[control sC] nameSpawn: ${nameSpawn} energy: ${energy}`);
-    // u.log(`[control sC] nameCreep: ${nameCreep} parts: ${JSON.stringify(parts)} role: ${role}`);
-
+   
     const result = this.spawnShort(nameSpawn, nameCreep, parts, role);
+
+    mc.setStage(nameCreep, 'clean');
 
     return result !== OK || nameCreep;
   },
   // Spawn Miner
   sM: function(nameSpawn, energy) {
-    const u = util;
-    const role = 'miner';
+        const role = 'miner';
     const prefixNameCreep = 'X';
     const countPartsSectionTemplate = 2;
     const costBodySectionTemplate = 100 + 50;
@@ -193,10 +194,7 @@ var control = {
       'move': countParts
     };
     const nameCreep = prefixNameCreep + Game.time;
-
-    u.log(`[control s${prefixNameCreep}] nameSpawn: ${nameSpawn} energy: ${energy}`);
-    u.log(`[control s${prefixNameCreep}] nameCreep: ${nameCreep} parts: ${JSON.stringify(parts)} role: ${role}`);
-
+  
     const result = this.spawnShort(nameSpawn, nameCreep, parts, role);
 
     return {
@@ -205,10 +203,7 @@ var control = {
     }
   },
 
-
-
   sB: function(nameSpawn, energy) {
-    const u = util;
     const role = 'builder';
     const prefixNameCreep = 'B';
     const countPartsSectionTemplate = 4;
@@ -223,10 +218,7 @@ var control = {
       'move': countParts * 2
     };
     const nameCreep = prefixNameCreep + Game.time;
-
-    u.log(`[control s${prefixNameCreep}] nameSpawn: ${nameSpawn} energy: ${energy}`);
-    u.log(`[control s${prefixNameCreep}] nameCreep: ${nameCreep} parts: ${JSON.stringify(parts)} role: ${role}`);
-
+  
     const result = this.spawnShort(nameSpawn, nameCreep, parts, role);
 
     return {
@@ -250,6 +242,161 @@ var control = {
       'move': parts
     }, 'upgrader');
   },
+  sDecoy: function(nameSpawn, energy) {
+    if (energy === undefined) {
+      var spawn = Game.spawns[nameSpawn];
+      if (spawn) {
+        energy = spawn.room.energyAvailable;
+      }
+    }
+
+    const role = 'decoy';
+    const prefixNameCreep = 'Quack';
+    const countPartsSectionTemplate = 2;
+    const costBodySectionTemplate = 10 + 50;
+    var countParts = Math.floor(energy / costBodySectionTemplate);
+    if (countParts * countPartsSectionTemplate > 50) {
+      countParts = parseInt(50 / countPartsSectionTemplate);
+    }
+    const parts = {
+      'tough': countParts,
+      'move': countParts
+    };
+    const nameCreep = prefixNameCreep + Game.time;
+
+    const result = this.spawnShort(nameSpawn, nameCreep, parts, role);
+
+    if (!Game.creeps[nameCreep]) {
+      return 'ERROR';
+    }
+
+    return nameCreep;
+  },
+  sHealer: function(nameSpawn, energy) {
+    if (energy === undefined) {
+      var spawn = Game.spawns[nameSpawn];
+      if (spawn) {
+        energy = spawn.room.energyAvailable;
+      }
+    }
+
+    const role = 'healer';
+    const prefixNameCreep = 'Heal';
+    const countPartsSectionTemplate = 4;
+    const costBodySectionTemplate = 10 + 150 + 50 + 50;
+    var countParts = Math.floor(energy / costBodySectionTemplate);
+    if (countParts * countPartsSectionTemplate > 50) {
+      countParts = parseInt(50 / countPartsSectionTemplate);
+    }
+    const parts = {
+      'tough': countParts,
+      'heal': countParts,
+      'move': countParts * 2
+    };
+    const nameCreep = prefixNameCreep + Game.time;
+
+    const result = this.spawnShort(nameSpawn, nameCreep, parts, role);
+
+    if (!Game.creeps[nameCreep]) {
+      return 'ERROR';
+    }
+
+    return nameCreep;
+  },
+  sHealerMax: function(nameSpawn, energy) {
+    if (energy === undefined) {
+      var spawn = Game.spawns[nameSpawn];
+      if (spawn) {
+        energy = spawn.room.energyAvailable;
+      }
+    }
+
+    const role = 'healer';
+    const prefixNameCreep = 'HealMax';
+    const countPartsSectionTemplate = 2;
+    const costBodySectionTemplate = 150 + 50;
+    var countParts = Math.floor(energy / costBodySectionTemplate);
+    if (countParts * countPartsSectionTemplate > 50) {
+      countParts = parseInt(50 / countPartsSectionTemplate);
+    }
+    const parts = {
+      'heal': countParts,
+      'move': countParts
+    };
+    const nameCreep = prefixNameCreep + Game.time;
+
+    const result = this.spawnShort(nameSpawn, nameCreep, parts, role);
+
+    if (!Game.creeps[nameCreep]) {
+      return `ERROR: ${result} energy: ${energy} countParts: ${countParts} cost: ${costBodySectionTemplate}`;
+    }
+
+    return nameCreep;
+  },
+  sExcavator: function(nameSpawn, energy) {
+    if (energy === undefined) {
+      var spawn = Game.spawns[nameSpawn];
+      if (spawn) {
+        energy = spawn.room.energyAvailable;
+      }
+    }
+
+    const role = 'excavator';
+    const prefixNameCreep = 'Excavator';
+    const countPartsSectionTemplate = 2;
+    const costBodySectionTemplate = 100 + 50;
+    var countParts = Math.floor(energy / costBodySectionTemplate);
+    if (countParts * countPartsSectionTemplate > 50) {
+      countParts = parseInt(50 / countPartsSectionTemplate);
+    }
+    const parts = {
+      'work': countParts,
+      'move': countParts
+    };
+    const nameCreep = prefixNameCreep + Game.time;
+
+    const result = this.spawnShort(nameSpawn, nameCreep, parts, role);
+
+    if (!Game.creeps[nameCreep]) {
+      return 'ERROR';
+    }
+
+    return nameCreep;
+  },
+
+  sDestroy: function(nameSpawn, energy) {
+    if (energy === undefined) {
+      var spawn = Game.spawns[nameSpawn];
+      if (spawn) {
+        energy = spawn.room.energyAvailable;
+      }
+    }
+
+    const role = 'attacker';
+    const prefixNameCreep = 'Destroyer';
+    const countPartsSectionTemplate = 6;
+    const costBodySectionTemplate = 10 + 80 + 100 + 50 + 50 + 50;
+    var countParts = Math.floor(energy / costBodySectionTemplate);
+    if (countParts * countPartsSectionTemplate > 50) {
+      countParts = parseInt(50 / countPartsSectionTemplate);
+    }
+    const parts = {
+      'tough': countParts,
+      'work': countParts,
+      'attack': countParts,
+      'move': countParts * 3
+    };
+    const nameCreep = prefixNameCreep + Game.time;
+
+    const result = this.spawnShort(nameSpawn, nameCreep, parts, role);
+
+    if (!Game.creeps[nameCreep]) {
+      return 'ERROR';
+    }
+
+    return nameCreep;
+  },
+
   sDef: function (nameSpawn, energy) {
     var parts = Math.floor(energy / 250);
     return this.spawnShort(nameSpawn, 'D' + Game.time, {

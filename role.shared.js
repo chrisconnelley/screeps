@@ -1,8 +1,6 @@
 var util = require('util');
 var locator = require('locator');
 var mc = require('util.memory.creep')
-
-
 var shared = {
   displayBadge: function (creep, characterBadge, size = '10px', color = '#00FF00', stroke = '#AA0000') {
     creep.room.visual.text(characterBadge, creep.pos, {
@@ -11,26 +9,12 @@ var shared = {
       stroke: stroke
     });
   },  
-  pave: function(creep) {
-    // if (creep.fatigue && creep.pos.lookFor(LOOK_STRUCTURES).length === 0) {
-    //   creep.room.createConstructionSite(creep.pos.x, creep.pos.y, STRUCTURE_ROAD);
-    // } 
-  },
   transfer: function(creep, target) {
-    const u = util;
-    u.log(`[role.shared transfer] creep: ${creep} target: ${target}`);
-
-    u.log(`[role.shared transfer] creep.store ${JSON.stringify(creep.store)}`);
-
     var typeResources = Object.keys(creep.store);
-    
-    u.log(`typeResources ${typeResources}`);
-    
     return creep.transfer(target, typeResources[0]);
   },
   depositResource: function(creep) {
-    const u = util;
-    container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+        container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
       filter: (structure) => {
         return ((structure.structureType == STRUCTURE_TERMINAL || 
           structure.structureType == STRUCTURE_STORAGE
@@ -43,8 +27,7 @@ var shared = {
     // deposit all in container 
     var resultTransfer = creep.transfer(container, idsInCreepStore[0]);
     if (resultTransfer !== 0 && resultTransfer !== ERR_NOT_IN_RANGE) {
-      u.log("resultTransfer (" + creep + ") to (" + container + "): " + util.errorCodeToDisplay(resultTransfer));
-    }
+          }
     if (resultTransfer == ERR_NOT_IN_RANGE) {
       creep.moveTo(container, {
         visualizePathStyle: {
@@ -52,14 +35,11 @@ var shared = {
         }
       });
     }
-    // move to container if the container isn't close enough
-
   },
   checkShouldDeposit: function(creep) {
     var idsInCreepStore = Object.keys(creep.store);
     if ((idsInCreepStore.length == 1 && idsInCreepStore[0] !== 'energy') || idsInCreepStore.length > 1) {
-      util.log("Creep (" + creep + ") should deposit resources");
-      this.depositResource(creep);  
+            this.depositResource(creep);  
       return true;
     }
 
@@ -82,24 +62,6 @@ var shared = {
 
     return resultGather;
   },
-  collectResource: function (creep, typeResource) {
-    // var resourceClosest = locator.findClosestResource(creep, typeResource);
-    // var resultGather = this.gatherResource(creep, resourceClosest);
-
-    // if (resultGather == ERR_NOT_IN_RANGE) {
-    //   creep.moveTo(resourceClosest, {
-    //     visualizePathStyle: {
-    //         fill: 'transparent',
-    //         stroke: '#0000ff',
-    //         lineStyle: 'solid',
-    //         strokeWidth: .35,
-    //         opacity: .5
-    //     }
-    //   });
-    // }
-
-    return resultGather;
-  },
   upgradeController: function(creep) {
     var roomSpawn = creep.room;
     var controller = roomSpawn.controller;
@@ -113,23 +75,14 @@ var shared = {
       });
     }
   },
-  forgetSource: function (creep) {
-    creep.memory.sourceId = null;
-
-    return "forgot source for " + creep
-  },
   deliverResource: function(creep, target, typeResource, amount) {
-    const u = console;
-    // u.log(`deliverResource: ${creep} ${target}`);
-
+        // 
     var targetObject = Game.getObjectById(target);
 
     if (creep.pos.isNearTo(targetObject)) {
       var result = creep.transfer(targetObject, typeResource, parseInt(amount));
-      // console.log(`result: ${creep} ${result} ${targetObject} ${typeResource} ${amount}`);
-      return result;
+      //       return result;
     } else {
-      // u.log(`Not close enough to target: ${JSON.stringify(targetObject)}`)
       creep.moveTo(targetObject, {
         visualizePathStyle: {
             fill: 'transparent',
@@ -142,41 +95,16 @@ var shared = {
       return ERR_NOT_IN_RANGE;
     }
   },
-  collectResource: function(creep, typeResource, amount) {
-    const storage = creep.room.storage;
-
-    if (!storage) return ERR_NOT_FOUND;
-
-    if (creep.pos.isNearTo(storage)) {
-      var result = creep.withdraw(storage, typeResource, amount);
-      console.log(`result: ${result}`);
-    } else {
-      creep.moveTo(storage, {
-        visualizePathStyle: {
-            fill: 'transparent',
-            stroke: '#0000ff',
-            lineStyle: 'solid',
-            strokeWidth: .35,
-            opacity: .5
-        }
-      });
-    }
-  },
   depositResources: function (creep) {
     containers = creep.room.find(FIND_STRUCTURES, {
       filter: (structure) => {
         return ((structure.structureType == STRUCTURE_STORAGE) && structure.store.getFreeCapacity() > 0);
       }
     });
-
-
     var idsInCreepStore = Object.keys(creep.store);
 
     // deposit all in container 
     var resultTransfer = creep.transfer(containers[0], idsInCreepStore[0]);
-    if (resultTransfer !== 0 && resultTransfer !== ERR_NOT_IN_RANGE) {
-      // util.log("resultTransfer (" + creep + ") to (" + containers[0] + "): " + util.errorCodeToDisplay(resultTransfer));
-    }
     if (resultTransfer == ERR_NOT_IN_RANGE) {
       creep.moveTo(containers[0], {
         visualizePathStyle: {
@@ -210,10 +138,8 @@ var shared = {
     }
   },
   gatherEnergy: function (creep, source) {
-    const u = util;
-    
+        
     if (!creep || !source) return;
-    
     var result;
     result = creep.harvest(source);
 
@@ -225,19 +151,16 @@ var shared = {
         if (source.store) {
               var typeResources = Object.keys(source.store);
               result = creep.withdraw(source, typeResources[0]);
-              u.log(`creep.memory.role ${creep.name} withdraw ${typeResources[0]} from ${source} with result ${util.errorCodeToDisplay(result)}`);
-        }
+                      }
     }
 
     if (result !== OK && result !== ERR_NOT_IN_RANGE) {
-      u.log(`Gather attempt by ${creep} from ${source} result: ${util.errorCodeToDisplay(result)}`);
-    }
+          }
 
     return result;
   },
   checkRecycle: function (nameCreep) {
     var creep = Game.creeps[nameCreep];
-    
     if (creep.ticksToLive < 100) {
       mc.setStage(nameCreep, 'recycle');
     }
@@ -271,12 +194,10 @@ var shared = {
     };
   },
   checkRenew: function (nameCreep, nameStageAfterRenew) {
-    const u = util;
-    // return;
+        // return;
     var creep = Game.creeps[nameCreep];
     // var spawnRenew = util.pickRandom(creep.room.find(FIND_MY_SPAWNS));
     var spawnRenew = creep.pos.findClosestByPath(FIND_MY_SPAWNS);
-    
     if (!creep || !spawnRenew) {
       return false;
     }
@@ -289,8 +210,7 @@ var shared = {
 
     }
 
-    u.log(`checkRenew stage: ${nameCreep} ${mc.getStage(nameCreep)}`);
-    if (mc.getStage(nameCreep) === 'renew') {
+        if (mc.getStage(nameCreep) === 'renew') {
       if (creep.ticksToLive > 1400 || spawnRenew.energy < 10 || spawnRenew.spawning) {
         mc.setStage(nameCreep, nameStageAfterRenew);
         return false;
@@ -306,14 +226,10 @@ var shared = {
     return false;
   },
   transferEnergyOrMoveTo: function (creep, target) {
-    const u = util;
-    var resultTransfer = creep.transfer(target, RESOURCE_ENERGY);
-    
-    u.log(`resultTransfer ${creep.name} to ${target}: ${resultTransfer}`);
-    
+        var resultTransfer = creep.transfer(target, RESOURCE_ENERGY);
+        
     if (resultTransfer !== OK && resultTransfer !== ERR_NOT_IN_RANGE) {
-      util.log("resultTransfer (" + creep + ") to (" + target + "): " + util.errorCodeToDisplay(resultTransfer));
-    }
+          }
     if (resultTransfer == ERR_NOT_IN_RANGE) {
       creep.moveTo(target, {
         visualizePathStyle: {

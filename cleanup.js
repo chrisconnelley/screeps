@@ -7,5 +7,4 @@ var cleanup = {
   }
   }
 }
-
 module.exports = cleanup;

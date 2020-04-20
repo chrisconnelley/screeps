@@ -13,7 +13,6 @@ var roleLoader = {
     return message;
   },
   controlCommand: function(nameCreep, command) {
-    console.log("controlCommand" + command);
     eval(command); // uses nameCreep
   },
   displayBadge: function (nameCreep) {
@@ -32,12 +31,10 @@ var roleLoader = {
 
     var creep = Game.creeps[nameCreep];
     if (!utilMemory.hasMemory(creep, 'consumer')) {
-      console.log("Loader (" + nameCreep + ") needs consumer assigned.");
       isSetup = false;
     } 
 
     if (!utilMemory.hasMemory(creep, 'source')) {
-       console.log("Loader (" + nameCreep + ") needs source assigned.");
       isSetup = false;
     }
 
@@ -48,17 +45,14 @@ var roleLoader = {
     var creep = Game.creeps[nameCreep];
 
     if (!utilMemory.hasMemory(creep, 'home_roomName')) {
-      console.log("Loader (" + nameCreep + ") needs home assigned.");
       return;
     }
 
     var isHome = creep.pos.isEqualTo(this.home(nameCreep));
-    // console.log(nameCreep + " isHome? " + isHome);
-    
     if (!isHome) {
       // check if we really are home
       // if (creep.pos.isEqualTo(this.home(nameCreep))) {
-      //   console.log(creep.pos + " " + this.home(nameCreep));
+      //   //
       //   this.assign_isHome(nameCreep, true);
       // } else {
         creep.moveTo(this.home(nameCreep), {
@@ -84,13 +78,13 @@ var roleLoader = {
 
     for (var i=0; i < countConsumers; i++) {
       consumer = this.consumer(nameCreep, i);
-      // console.log(nameCreep + " consumer: " + consumer);
+      // //
       if (consumer === undefined || consumer.store === undefined) continue;
       doesConsumerNeedEnergy = consumer.store.energy < consumer.store.getCapacity('energy');
       if (doesConsumerNeedEnergy) break;
     }
 
-    // console.log(nameCreep + " hasSourceEnergy? " + hasSourceEnergy + " doesConsumerNeedEnergy? " + doesConsumerNeedEnergy);
+    // //
 
     if (hasSourceEnergy && doesConsumerNeedEnergy) {
       if (this.stage(nameCreep) === undefined) {
@@ -103,7 +97,6 @@ var roleLoader = {
         creep.say("!!");
         var result = creep.withdraw(source, RESOURCE_ENERGY);
         this.assign_stage(nameCreep, 'unloading'); 
-        console.log(nameCreep +  " loading " + result + " " + stage);
       }
       else {
         var result = creep.transfer(consumer, RESOURCE_ENERGY);
@@ -115,7 +108,7 @@ var roleLoader = {
   consumer: function(nameCreep, index) {
     var creep = Game.creeps[nameCreep];
     var idsConsumers = utilMemory.getArray(creep, 'consumer');
-    // console.log("idsConsumers: " + idsConsumers[index]);
+    // //
     return Game.getObjectById(idsConsumers[index]);
   },
   consumers_length: function(nameCreep) {

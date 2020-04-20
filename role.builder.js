@@ -5,7 +5,6 @@ var locator = require('locator');
 
 var roleBuilder = {
   run: function (creep) {
-    if (creep.spawning) return;
     shared.displayBadge(creep, 'B');
     var stage = mc.getStage(creep.name);
 
@@ -27,19 +26,15 @@ var roleBuilder = {
       }
     } else {
        this.harvest(creep);
-       //shared.retrieveEnergy(creep);
-        
     }
   },
   harvest: function(creep) {
-    const u =  console;
-    var closest_energy; 
+        var closest_energy; 
   
     if (!closest_energy) closest_energy = locator.findClosestStoreEnergy(creep);
 
     if (!closest_energy) closest_energy = locator.findClosestEnergy(creep);
-    u.log(`harvest: ${closest_energy}`);
-    if (!closest_energy) closest_energy = locator.findClosestMineral(creep);
+        if (!closest_energy) closest_energy = locator.findClosestMineral(creep);
     var resultGather = shared.gatherEnergy(creep, closest_energy);
 
     if (resultGather == ERR_NOT_IN_RANGE) {

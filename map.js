@@ -2,7 +2,6 @@ var util = require('util');
 
 var map = {
   addAdjacentRooms: function (nameRoom) {
-    const u = util;
     var room = Game.rooms[nameRoom];
 
     if (!room || !room.controller || room.controller.my) return;
@@ -12,7 +11,6 @@ var map = {
 
     _.forIn(exits, (exitRoomName, exitDirection) => {
       if (!memoryRooms[exitRoomName]) {
-        u.log(`Room (${exitRoomName}) NOT found in map.`)
         memoryRooms[exitRoomName] = {};
       }
     });
@@ -29,13 +27,10 @@ var map = {
     }
   },
   mapRoom: function (nameRoom) {
-    const u = util;
     var memoryRooms = Memory.colony.rooms;
     var memoryRoom = memoryRooms[nameRoom];
 
     var room = Game.rooms[nameRoom];
-
-    u.log(`nameRoom: ${nameRoom} room: ${room}`)
 
     // If a room doesn't exist, set up all the default properties
     if (!memoryRoom) {
@@ -51,8 +46,6 @@ var map = {
       if (!memoryRooms[nameRoom].minerals) {
         memoryRooms[nameRoom].minerals = {};
       }
-
-
       return;
     }
 
@@ -73,14 +66,10 @@ var map = {
     memoryRoom.tickUpdated = Game.time;
   },
   mapSource: function (source) {
-    const u = util;
     var nameRoom = source.pos.roomName;
 
-    u.log(`updateMapSource (${nameRoom}, ${source})`)
     var memoryRooms = Memory.colony.rooms;
     var memoryRoom = memoryRooms[nameRoom];
-
-    u.log(memoryRoom.name + " " + memoryRoom.sources);
 
     if (!memoryRoom.sources) return;
 
@@ -101,14 +90,10 @@ var map = {
     memorySource.tickUpdated = Game.time;
   },
   mapMineral: function (mineral) {
-    const u = util;
     var nameRoom = mineral.pos.roomName;
 
-    u.log(`mapMineral (${nameRoom}, ${mineral})`)
     var memoryRooms = Memory.colony.rooms;
     var memoryRoom = memoryRooms[nameRoom];
-
-    u.log(`memoryRoom.name: ${memoryRoom.name} memoryRoom.minerals: ${memoryRoom.minerals}`);
 
     if (!memoryRoom.minerals) {
       memoryRoom.minerals = {};
@@ -128,12 +113,10 @@ var map = {
       var structures = mineral.pos.lookFor(LOOK_STRUCTURES);
 
       var hasExtractor = false;
-      u.log(`structures: ${JSON.stringify(structures)}`);
       structures.forEach((structure) => {
         hasExtractor = structure.my && structure.structureType === 'extractor'
       });
 
-      u.log(`hasExtractor: ${hasExtractor}`);
       memoryMineral.hasExtractor = hasExtractor;
     }
 
@@ -149,24 +132,15 @@ var map = {
 
   },
   setRoomControllerProgress: function(nameRoom, arrayProgress) {
-    const u = util;
-   
     var memoryController = _.get(Memory, `colony.rooms.${nameRoom}.controller`);
     memoryController.arrayProgress = arrayProgress;
-
-    u.log(`memoryController: ${JSON.stringify(memoryController)}`);
   },
   getRoomControllerProgress: function(nameRoom) {
-    const u = util;
-    
     var memoryArrayProgress = _.get(Memory, `colony.rooms.${nameRoom}.controller.arrayProgress`);
-
-    u.log(`${nameRoom} memoryArrayProgress: ${JSON.stringify(memoryArrayProgress)}`);
   
     return memoryArrayProgress;
   },
   markRoomHostile: function (nameRoom) {
-    console.log("TODO: map.markRoomHostile");
     var memoryColony = this.getOrCreateMemoryObject(Memory, 'colony');
     var memoryRooms = this.getOrCreateMemoryObject(memoryColony, 'rooms');
     var memoryRoom = this.getOrCreateMemoryObject(memoryRooms, nameRoom);
@@ -175,20 +149,10 @@ var map = {
     memoryRoomHostile = true;
 
     return false;
-
-    // .rooms[nameRoom];
-
-    // if (!memoryRoom) {
-
-    // }
   },
   getOrCreateMemory: function(keyMemoryParent, keyMemoryChild) {
   },
   getOrCreateMemoryArray: function (keyMemoryParent, keyMemoryChild) {
-    var u = util;
-
-    u.log(`keyMemoryParent: ${keyMemoryParent} keyMemoryChild: ${keyMemoryChild}`);
-    
     if (!keyMemoryParent[keyMemoryChild]) {
       keyMemoryParent[keyMemoryChild] = [];
     }
@@ -196,24 +160,14 @@ var map = {
     return keyMemoryParent[keyMemoryChild];
   },
   getOrCreateMemoryObject: function (keyMemoryParent, keyMemoryChild) {
-    var u = util;
-
-    u.log(`keyMemoryParent: ${JSON.stringify(keyMemoryParent)} keyMemoryChild: ${keyMemoryChild}`);
     if (!keyMemoryParent[keyMemoryChild]) {
       keyMemoryParent[keyMemoryChild] = {};
     }
 
     return keyMemoryParent[keyMemoryChild];
   },
-  /* 
-    getOrCreateMemoryString
-
-    return null if memory exists, but is not of type string
-  */
   getOrCreateMemoryString: function (keyMemoryParent, keyMemoryChild) {
     var memory = keyMemoryParent[keyMemoryChild];
-    console.log(`memory: ${memory} keyMemoryChild: ${keyMemoryChild}`);
-
     if (!keyMemoryParent[keyMemoryChild]) {
       keyMemoryParent[keyMemoryChild] = '';
     }
@@ -224,14 +178,8 @@ var map = {
 
     return memory;
   },
-  /* 
-    getOrCreateMemoryString
-
-    return null if memory exists, but is not of type string
-  */
   getOrCreateMemoryBoolean: function (keyMemoryParent, keyMemoryChild) {
     var memory = keyMemoryParent[keyMemoryChild];
-    console.log(`memory: ${memory} keyMemoryChild: ${keyMemoryChild}`);
 
     if (keyMemoryParent[keyMemoryChild] === undefined) {
       keyMemoryParent[keyMemoryChild] = false;

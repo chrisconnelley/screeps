@@ -23,7 +23,6 @@ var brainSpawn = {
       memoryRoom.spawns[nameSpawn].tickUpdated = Game.time;
       return;
     }
- 
     // Update values that change
     memorySpawn.store = spawn.store;
     memorySpawn.spawning = spawn.spawning;
@@ -59,7 +58,6 @@ var brainSpawn = {
       };
       creeps.sort(sortTTL);
 
-      util.log(spawn.name + " finding creep with lowest TTL: " + creeps[0] + " TTL: " + creeps[0].ticksToLive + " Creep Count: " + creeps.length);
       var resultRenew = spawn.renewCreep(creeps[0]);
     }
   },

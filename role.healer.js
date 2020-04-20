@@ -1,10 +1,7 @@
-var util = require('util');
 var shared = require('role.shared');
-var mc = require('util.memory.creep');
 
 var roleHealer = {
     run: function(creep) {
-        if (creep.spawning) return;
         shared.displayBadge(creep, '💙');
         if (shared.checkRenew(creep.name, 'heal')) return;
         
@@ -13,8 +10,7 @@ var roleHealer = {
         filter: (creep) =>
             creep.hits < creep.hitsMax
         });
-        
-        console.log(`Healer: ${creep.name}`);
+
         const woundedCreep = woundedCreeps[0];
         
         if (creep.pos.isNearTo(woundedCreep)) {
@@ -30,7 +26,6 @@ var roleHealer = {
                 }
             });
         }
-    
         
     }
 };

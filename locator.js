@@ -1,5 +1,6 @@
 var util = require('util');
 var mc = require('util.memory.creep');
+var config = require('config');
 
 var locator = {
     getAmountDroppedEnergy: function(nameRoom) {
@@ -18,11 +19,8 @@ var locator = {
     return amountTotal;
   },
   getAmountStoredEnergyInRoom: function(nameRoom) {
-    const u = util;
-    u.log(`[locator getAmountStoredEnergyInRoom] nameRoom: ${nameRoom}`);
     var structures = Game.rooms[nameRoom].find(FIND_STRUCTURES);
 
-    u.log(`structures: ${structures}`);
     var amountTotal = 0;
 
     _.forIn(structures, (structure, idStructure) => {
@@ -35,13 +33,11 @@ var locator = {
     return amountTotal;
   },
   findAssignedTransportRemote: function (nameRoom) {
-    const u = util;
     var memoryRoomForeign = Memory.colony.rooms[nameRoom];
     var memorySpawnClosest = this.findSpawnOwnedClosest(nameRoom);
 
     var nameTransportRemote = memoryRoomForeign.nameTransportRemote;
 
-    u.log(`findAssignedTransportRemote (${nameRoom}): nameTransportRemote: ${nameTransportRemote} memorySpawnClosest: ${memorySpawnClosest}`)
     if (nameTransportRemote) {
       var creep = Game.creeps[nameTransportRemote];
 
@@ -58,33 +54,24 @@ var locator = {
 
       if (parts < 10) return;
 
-      u.log(`Generating remote transport: ${nameTransportRemoteNew} with ${parts} parts`);
-
-      var resultSpawn;
+        var resultSpawn;
       var resultSpawn = control.spawnShort(memorySpawnClosest.name, nameTransportRemoteNew, {
         'move': parts,
         'carry': parts
       }, 'transport-remote');
-      u.log(`${nameTransportRemoteNew} resultSpawn: ${resultSpawn}`);
-
-      if (resultSpawn === OK) {
+        if (resultSpawn === OK) {
         memoryRoomForeign.nameTransportRemote = nameTransportRemoteNew;
-        u.log(`resultSpawn inside: ${resultSpawn}`);
-
-        var resultSet;
+            var resultSet;
         resultSet = mc.setRoom(nameTransportRemoteNew, nameRoom);
-        u.log(`Result of assigning Room (${nameRoom}) to transport remote ${nameTransportRemoteNew}: ${resultSet}`);
-      }
+          }
     }
   },
   findAssignedScout: function (nameRoom) {
-    const u = util;
     var memoryRoomForeign = Memory.colony.rooms[nameRoom];
     var memorySpawnClosest = this.findSpawnOwnedClosest(nameRoom);
 
     var nameScout = memoryRoomForeign.nameScout;
 
-    u.log(`findAssignedScout (${nameRoom}): nameScout: ${nameScout} memorySpawnClosest: ${memorySpawnClosest}`)
     if (nameScout) {
       var creep = Game.creeps[nameScout];
 
@@ -100,16 +87,11 @@ var locator = {
       var resultSpawn = control.spawnShort(memorySpawnClosest.name, nameScoutNew, {
         'move': 1
       }, 'scout');
-      u.log(`${nameScoutNew} resultSpawn: ${resultSpawn}`);
-
-      if (resultSpawn === OK) {
+        if (resultSpawn === OK) {
         memoryRoomForeign.nameScout = nameScoutNew;
-        u.log(`resultSpawn inside: ${resultSpawn}`);
-
-        var resultSet;
+            var resultSet;
         resultSet = mc.setRoom(nameScoutNew, nameRoom);
-        u.log(`Result of assigning Room (${nameRoom}) to scout ${nameScoutNew}: ${resultSet}`);
-      }
+          }
     }
   },
   findAssignedSource: function (creep) {
@@ -141,29 +123,24 @@ var locator = {
     return null;
   },
   findClosestMineral: function (creep) {
-    const u = util;
     var minerals = creep.room.find(FIND_MINERALS, {
       filter: (mineral) => {
         return false;
       }
     });
 
-    u.log(`findClosestMineral`);
-
     return null;
   },
   findClosestEnergy: function (creep) {
-    const u = util;
     var energyClosestFound = null;
 
     energyClosestFound = this.findAssignedSource(creep);
     if (energyClosestFound) {
-      u.log(`Using assigned source ${energyClosestFound}`);
-      return energyClosestFound;
+        return energyClosestFound;
     }
 
     // if (creep.memory.role !== 'harvester') {
-    //   u.log(`[locator findClosestEnergy] ${creep.name} looking at structures`)
+    //   //
     //   var container = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {
     //     filter: (structure) => {
     //       return ((
@@ -178,15 +155,13 @@ var locator = {
     if (resources.length > 0) {
       for (var i = 0; i < resources.length; i++) {
         var resource = resources[i];
-        u.log(`resource: ${resource.amount} ${resource.resourceType}`);
-        if (resource.amount > 100 && resource.resourceType === RESOURCE_ENERGY) {
+            if (resource.amount > 100 && resource.resourceType === RESOURCE_ENERGY) {
           return resource;
         }
       }
     }
 
     var tombstones = creep.room.find(FIND_TOMBSTONES);
-    util.log(tombstones);
     if (tombstones.length > 0) {
       for (var i = 0; i < tombstones.length; i++) {
         var tombstone = tombstones[i];
@@ -200,7 +175,7 @@ var locator = {
     if (ruins.length > 0) {
       for (var i = 0; i < ruins.length; i++) {
         var ruin = ruins[i];
-        // util.log("Ruin with energy: " + ruin.store['energy']);
+        // //
         if (ruin.store['energy'] > 0) {
           return ruin;
         }
@@ -232,11 +207,8 @@ var locator = {
       }
     });
 
-    u.log(`creep: ${creep.name } source: ${source}`);
-
     return source;
   },
-
   findClosestStoreDeliver: function (creep) {
     // var source = creep.pos.findClosestByRange(FIND_STRUCTURES, {
     //   filter: (structure) => {
@@ -247,44 +219,32 @@ var locator = {
     // });
 
     // return source;
-    
     var u = util;
 
     var storage = creep.room.storage;
     var terminal = creep.room.terminal;
 
     let source;
-    
     source = creep.pos.findClosestByRange(FIND_STRUCTURES, {
       filter: (structure) => {
-        //   console.log(`structure.structureType ${structure.structureType}`)
+        //   //
         if (structure.structureType === STRUCTURE_CONTAINER) {
-            console.log(`container:${structure} ${structure.store.getFreeCapacity()} creep: ${creep.store[RESOURCE_ENERGY]}`);
-        }
+                }
         return (structure.structureType === STRUCTURE_CONTAINER &&
           structure.store.getFreeCapacity() >= creep.store[RESOURCE_ENERGY] &&
           structure.store.getFreeCapacity() > 0 && 
           creep.store[RESOURCE_ENERGY] > 0)
       }
     });
-    
-    console.log(`creep: ${creep} structure: ${source}`);
-
     if (!source && storage ) source = storage;
 
     if (source && source.store.getFreeCapacity() === 0) {
         if (terminal) source = terminal;
     }
 
-    u.log(`creep: ${creep.name } source: ${source}`);
-
     return source;
   },
-
-
   findContainer: function (creep) {
-    const u = util;
-    u.log(`[locator findContainer] creep (${creep})`);
     var containers = creep.room.find(FIND_STRUCTURES, {
       filter: (structure) => {
         return structure.structureType === STRUCTURE_CONTAINER &&
@@ -310,8 +270,10 @@ var locator = {
       filter: (structure) => {
         return (
           structure.structureType == STRUCTURE_EXTENSION ||
-          structure.structureType == STRUCTURE_SPAWN ||
-          structure.structureType == STRUCTURE_TOWER) && structure.energy < structure.energyCapacity;
+          structure.structureType == STRUCTURE_SPAWN 
+          ||
+          structure.structureType == STRUCTURE_TOWER
+          ) && structure.energy < structure.energyCapacity;
       }
     });
 
@@ -327,8 +289,7 @@ var locator = {
       });
 
       if (targetsStores.length === 0) {
-        util.log("All containers are full!");
-      } else {
+          } else {
         closest_target = targetsStores[0];
       }
     }
@@ -336,26 +297,19 @@ var locator = {
     return closest_target;
   },
   findRefuelTarget: function (creep) {
-    const u = util;
     var target;
 
-    if (!target) {
+    if (config.shouldRefuelTowers && !target) {
       target = locator.findRefuelTower(creep);
-      u.log(`Refueler (${creep.name} looking for closest tower: ${target})`);
-    }
-    
+      }
    
     if (!target) {
       target = locator.findRefuelSpawn(creep);
-      u.log(`Refueler (${creep.name} looking for spawn: ${target})`);
-    }
+      }
 
     if (!target) {
       target = locator.findRefuelExtension(creep);
-      u.log(`Refueler (${creep.name} looking for closest extension: ${target})`);
-    }
-    
-    
+      }
 
     return target;
   },
@@ -399,19 +353,16 @@ var locator = {
     //   let y = Math.abs(closest)
     //   if (util.distanceCheapest(towersclosest_target.pos.x)
     // }
-    
     var closest_target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
       filter: (structure) => {
         // if (structure.structureType === STRUCTURE_TOWER) {
-            // console.log(`structure ${structure} ${structure.energy}`)
+            // //
         return structure.structureType === STRUCTURE_TOWER && 
         structure.energy < structure.energyCapacity * 0.75;
         // }
         // return false;
       }
     });
-
-
 
     return closest_target;
   },
@@ -473,6 +424,4 @@ var locator = {
     return tombstone;
   },
 }
-
-
 module.exports = locator;

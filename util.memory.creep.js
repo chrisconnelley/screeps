@@ -1,5 +1,4 @@
 var um = require('util.memory');
-
 var memoryCreep = {
   setStage: function(nameCreep, stage) {
     var creep = Game.creeps[nameCreep];
@@ -9,13 +8,15 @@ var memoryCreep = {
     var creep = Game.creeps[nameCreep];
     return um.getString(creep, 'stage');
   },
-  getSource: function(nameCreep) {
+  getSource: function(nameCreep, isSecondary) {
+    var key = isSecondary ? 'sourceB' : 'source';
     var creep = Game.creeps[nameCreep];
-    return um.getObject(creep, 'source');
+    return um.getObject(creep, key);
   },
-  setSource: function(nameCreep, idSource) {
+  setSource: function(nameCreep, idSource, isSecondary) {
+    var key = isSecondary ? 'sourceB' : 'source';
     var creep = Game.creeps[nameCreep];
-    return um.remember(creep, 'source', idSource);
+    return um.remember(creep, key, idSource);
   },
   getMineral: function (nameCreep) {
     var creep = Game.creeps[nameCreep];
@@ -42,11 +43,8 @@ var memoryCreep = {
     return um.getString(creep, 'nameRoom');
   },
   setDestination: function(nameCreep) {
-
   },
   getDestination: function(nameCreep) {
-
   }
 };
-
 module.exports = memoryCreep;

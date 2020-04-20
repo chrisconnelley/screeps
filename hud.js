@@ -116,8 +116,7 @@ var hud = {
     return infoAboutCreeps;
   },
   getCreepAbbrev: function(creep) {
-    // TODO: get this from creep role info
-    return creep.name.substring(0,1);
+    return creep.memory.role.substring(0,1).toUpperCase();
   }
 }
 

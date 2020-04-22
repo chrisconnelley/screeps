@@ -12,9 +12,6 @@ var roleLoader = {
     creep.say(message);
     return message;
   },
-  controlCommand: function(nameCreep, command) {
-    eval(command); // uses nameCreep
-  },
   displayBadge: function (nameCreep) {
     var creep = Game.creeps[nameCreep];
     creep.room.visual.text('L', creep.pos, {

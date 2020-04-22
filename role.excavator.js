@@ -1,21 +1,21 @@
-var util = require('util');
 var mc = require('util.memory.creep');
 var shared = require('role.shared');
 
 var roleExcavator = {
-  controlCommand: function(nameCreep, command) {
-    eval(command); // uses nameCreep
+  badge: {
+    character: 'X',
+    colorOfText: '#FF0000',
+    colorOfStroke: '#00FF00',
+    size: '10px'
   },
   run: function (creep) {
     if (shared.checkRecycle(creep.name, mc.getStage, mc.setStage)) return;
 
-    shared.displayBadge(creep,'X','10px','#FF0000','#000000');
+    shared.displayBadge(creep, this.badge.character, this.badge.size, this.badge.colorOfText, this.badge.colorOfStroke);
     this.perform(creep.name); 
   },
   perform: function(nameCreep) {
     try {
-
-    
       var creep = Game.creeps[nameCreep];
 
       var sourceA = mc.getSource(nameCreep);

@@ -1,6 +1,7 @@
-var util = require('util');
-var brainData = require('brain.data');
-var locator = require('locator');
+const util = require('util');
+const brainData = require('brain.data');
+const locator = require('locator');
+const config = require('config');
 
 var hud = {
   run: function(nameRoom, status) {
@@ -51,7 +52,7 @@ var hud = {
       });
     })
   },
-  loadOtherRooms: function(nameRoom, status) {
+  loadOtherRooms: function(nameRoom, status) { // Deprecated?
     status.push('');
 
     var rooms = Game.rooms;
@@ -68,34 +69,35 @@ var hud = {
           status.push(`Floor: ${droppedResource} | Bank ${brainData.getValueLast(Memory.colony.rooms[room.name], 'energyStored')}`)
           if (rcl < 8) status.push(`RCL: ${rcl} | Til next: ${room.controller.progressTotal - room.controller.progress}`);
           
-          // ☢�💎⚡
+          // '⚠💣💎⚡'
           if (creepCount < 4) alerts += '💣';
           if (creepCount > 6) alerts += '⚠';
           if (droppedResource > 1500) alerts += '⚡';
-          switch (rcl) {
-            case 2:
-                if (roomCapacity < (300 + 5 * 50)) alerts += '🔔';
-                break;
-            case 3:
-                if (roomCapacity < (300 + 10 * 50)) alerts += '🔔';
-                break;
-            case 4:
-                if (roomCapacity < (300 + 20 * 50)) alerts += '🔔';
-                break;
-            case 5:
-                if (roomCapacity < (300 + 30 * 50)) alerts += '🔔';
-                break;
-            case 6:
-                if (roomCapacity < (300 + 40 * 50)) alerts += '🔔';
-                break;
-            case 7:
-                if (roomCapacity < (600 + 50 * 100)) alerts += '🔔';
-                break;
-            case 8:
-                if (roomCapacity < (600 + 60 * 200)) alerts += '🔔';
-                break;
-            default:
-          }
+          if (roomCapacity < config.roomEnergyCapacityDesired[rcl]) alerts += '🔔';
+          // switch (rcl) {
+          //   case 2:
+          //       if (roomCapacity < (300 + 5 * 50)) alerts += '🔔';
+          //       break;
+          //   case 3:
+          //       if (roomCapacity < (300 + 10 * 50)) alerts += '🔔';
+          //       break;
+          //   case 4:
+          //       if (roomCapacity < (300 + 20 * 50)) alerts += '🔔';
+          //       break;
+          //   case 5:
+          //       if (roomCapacity < (300 + 30 * 50)) alerts += '🔔';
+          //       break;
+          //   case 6:
+          //       if (roomCapacity < (300 + 40 * 50)) alerts += '🔔';
+          //       break;
+          //   case 7:
+          //       if (roomCapacity < (600 + 50 * 100)) alerts += '🔔';
+          //       break;
+          //   case 8:
+          //       if (roomCapacity < (600 + 60 * 200)) alerts += '🔔';
+          //       break;
+          //   default:
+          // }
           if (alerts === '') alerts = '💎';
           
           status.push(alerts + this.loadCreepsInfo(room.name));
@@ -117,7 +119,15 @@ var hud = {
   },
   getCreepAbbrev: function(creep) {
     return creep.memory.role.substring(0,1).toUpperCase();
-  }
+  },
+  displayRoom: function(nameRoom) {
+    let statusLines = []
+
+
+
+    return statusLines
+  },
+  
 }
 
 module.exports = hud;

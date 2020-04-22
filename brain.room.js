@@ -94,7 +94,9 @@ var brainRoom = {
     }
   },
   checkSource: function (nameRoom, idSource) {
-    // console.log(`[brain.room | checkSource] nameRoom: ${nameRoom} idSource: ${idSource}`)
+    return;
+    console.log(`[brain.room | checkSource] nameRoom: ${nameRoom} idSource: ${idSource}`)
+    
     var memoryRoom = Memory.colony.rooms[nameRoom];
     var memorySources = memoryRoom.sources;
 
@@ -141,7 +143,10 @@ var brainRoom = {
         return !memorySpawn.spawning
       });
 
+      // if 
+
     console.log(`[brain.room] checkSource:147 - nameSpawnUse: ${nameSpawnUse}`)
+
 
       if (nameSpawnUse) {
         var spawn = Game.spawns[nameSpawnUse];

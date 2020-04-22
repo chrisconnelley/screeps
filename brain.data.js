@@ -1,7 +1,8 @@
 var locator = require('locator');
+var config = require('config');
 
 var brainData = {
-  lengthTickLengthAverageOver: 99,
+  lengthTickLengthAverageOver: config.lengthTickLengthStored,
   recordData: function(parentMemory, nameMetric, valueMetric, lengthAverage = this.lengthTickLengthAverageOver) {
       var nameArray = `array${nameMetric}`;
       

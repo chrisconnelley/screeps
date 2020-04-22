@@ -27,6 +27,7 @@ var map = {
     }
   },
   mapRoom: function (nameRoom) {
+    
     var memoryRooms = Memory.colony.rooms;
     var memoryRoom = memoryRooms[nameRoom];
 

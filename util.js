@@ -45,6 +45,9 @@ var util = {
   distanceCheapest: function(a,b) {
     return Math.abs(a) + Math.abs(b);
   },
+  distanceCheapestByPosition: function(posA, posB) {
+    return this.distanceCheapest(posA.x - posB.x, posA.y - posB.y);
+  },
   errorCodeToDisplay(errorCode) {
     switch (errorCode) {
       case 0:

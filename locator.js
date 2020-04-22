@@ -3,10 +3,10 @@ var mc = require('util.memory.creep');
 var config = require('config');
 
 var locator = {
-    getAmountDroppedEnergy: function(nameRoom) {
-        return getAmountDroppedResources(nameRoom);    
-    },
-  getAmountDroppedResources: function(nameRoom) {
+  getAmountDroppedEnergy: function (nameRoom) {
+    return getAmountDroppedResources(nameRoom);
+  },
+  getAmountDroppedResources: function (nameRoom) {
     var resources = Game.rooms[nameRoom].find(FIND_DROPPED_RESOURCES);
     var amountTotal = 0;
 
@@ -18,14 +18,13 @@ var locator = {
 
     return amountTotal;
   },
-  getAmountStoredEnergyInRoom: function(nameRoom) {
+  getAmountStoredEnergyInRoom: function (nameRoom) {
     var structures = Game.rooms[nameRoom].find(FIND_STRUCTURES);
 
     var amountTotal = 0;
 
     _.forIn(structures, (structure, idStructure) => {
-      if (structure.structureType == STRUCTURE_CONTAINER ||
-        structure.structureType == STRUCTURE_STORAGE) {
+      if (structure.structureType == STRUCTURE_CONTAINER || structure.structureType == STRUCTURE_STORAGE) {
         amountTotal += structure.store[RESOURCE_ENERGY];
       }
     });
@@ -54,16 +53,21 @@ var locator = {
 
       if (parts < 10) return;
 
-        var resultSpawn;
-      var resultSpawn = control.spawnShort(memorySpawnClosest.name, nameTransportRemoteNew, {
-        'move': parts,
-        'carry': parts
-      }, 'transport-remote');
-        if (resultSpawn === OK) {
+      var resultSpawn;
+      var resultSpawn = control.spawnShort(
+        memorySpawnClosest.name,
+        nameTransportRemoteNew,
+        {
+          move: parts,
+          carry: parts,
+        },
+        'transport-remote'
+      );
+      if (resultSpawn === OK) {
         memoryRoomForeign.nameTransportRemote = nameTransportRemoteNew;
-            var resultSet;
+        var resultSet;
         resultSet = mc.setRoom(nameTransportRemoteNew, nameRoom);
-          }
+      }
     }
   },
   findAssignedScout: function (nameRoom) {
@@ -84,14 +88,19 @@ var locator = {
       var nameScoutNew = 'Scout' + nameRoom + Game.time;
 
       var resultSpawn;
-      var resultSpawn = control.spawnShort(memorySpawnClosest.name, nameScoutNew, {
-        'move': 1
-      }, 'scout');
-        if (resultSpawn === OK) {
+      var resultSpawn = control.spawnShort(
+        memorySpawnClosest.name,
+        nameScoutNew,
+        {
+          move: 1,
+        },
+        'scout'
+      );
+      if (resultSpawn === OK) {
         memoryRoomForeign.nameScout = nameScoutNew;
-            var resultSet;
+        var resultSet;
         resultSet = mc.setRoom(nameScoutNew, nameRoom);
-          }
+      }
     }
   },
   findAssignedSource: function (creep) {
@@ -126,7 +135,7 @@ var locator = {
     var minerals = creep.room.find(FIND_MINERALS, {
       filter: (mineral) => {
         return false;
-      }
+      },
     });
 
     return null;
@@ -136,7 +145,7 @@ var locator = {
 
     energyClosestFound = this.findAssignedSource(creep);
     if (energyClosestFound) {
-        return energyClosestFound;
+      return energyClosestFound;
     }
 
     // if (creep.memory.role !== 'harvester') {
@@ -155,7 +164,7 @@ var locator = {
     if (resources.length > 0) {
       for (var i = 0; i < resources.length; i++) {
         var resource = resources[i];
-            if (resource.amount > 100 && resource.resourceType === RESOURCE_ENERGY) {
+        if (resource.amount > 100 && resource.resourceType === RESOURCE_ENERGY) {
           return resource;
         }
       }
@@ -200,11 +209,9 @@ var locator = {
     var u = util;
 
     var source = creep.pos.findClosestByRange(FIND_STRUCTURES, {
-        filter: (structure) => {
-            return ((structure.structureType == STRUCTURE_STORAGE ||
-                structure.structureType == STRUCTURE_CONTAINER) &&
-                structure.store[RESOURCE_ENERGY] > 0)
-      }
+      filter: (structure) => {
+        return (structure.structureType == STRUCTURE_STORAGE || structure.structureType == STRUCTURE_CONTAINER) && structure.store[RESOURCE_ENERGY] > 0;
+      },
     });
 
     return source;
@@ -229,17 +236,14 @@ var locator = {
       filter: (structure) => {
         //   //
         if (structure.structureType === STRUCTURE_CONTAINER) {
-                }
-        return (structure.structureType === STRUCTURE_CONTAINER &&
-          structure.store.getFreeCapacity() >= creep.store[RESOURCE_ENERGY] &&
-          structure.store.getFreeCapacity() > 0 && 
-          creep.store[RESOURCE_ENERGY] > 0)
-      }
+        }
+        return structure.structureType === STRUCTURE_CONTAINER && structure.store.getFreeCapacity() >= creep.store[RESOURCE_ENERGY] && structure.store.getFreeCapacity() > 0 && creep.store[RESOURCE_ENERGY] > 0;
+      },
     });
-    if (!source && storage ) source = storage;
+    if (!source && storage) source = storage;
 
     if (source && source.store.getFreeCapacity() === 0) {
-        if (terminal) source = terminal;
+      if (terminal) source = terminal;
     }
 
     return source;
@@ -247,9 +251,8 @@ var locator = {
   findContainer: function (creep) {
     var containers = creep.room.find(FIND_STRUCTURES, {
       filter: (structure) => {
-        return structure.structureType === STRUCTURE_CONTAINER &&
-          structure.store.getUsedCapacity() > 0;
-      }
+        return structure.structureType === STRUCTURE_CONTAINER && structure.store.getUsedCapacity() > 0;
+      },
     });
 
     return containers[0];
@@ -257,10 +260,8 @@ var locator = {
   findContainerRemote: function (creep) {
     var containers = creep.room.find(FIND_STRUCTURES, {
       filter: (structure) => {
-        return structure.structureType === STRUCTURE_CONTAINER &&
-          structure.pos.getRangeTo(creep.room.controller) > 15 &&
-          structure.store.getUsedCapacity() > 0;
-      }
+        return structure.structureType === STRUCTURE_CONTAINER && structure.pos.getRangeTo(creep.room.controller) > 15 && structure.store.getUsedCapacity() > 0;
+      },
     });
 
     return containers[0];
@@ -268,13 +269,8 @@ var locator = {
   findEnergyTarget: function (creep) {
     var closest_target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
       filter: (structure) => {
-        return (
-          structure.structureType == STRUCTURE_EXTENSION ||
-          structure.structureType == STRUCTURE_SPAWN 
-          ||
-          structure.structureType == STRUCTURE_TOWER
-          ) && structure.energy < structure.energyCapacity;
-      }
+        return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN || structure.structureType == STRUCTURE_TOWER) && structure.energy < structure.energyCapacity;
+      },
     });
 
     // Targets.length would be 0 if all of the other structures are full
@@ -282,14 +278,12 @@ var locator = {
     if (closest_target === null || closest_target === undefined) {
       var targetsStores = creep.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
-          return ((structure.structureType == STRUCTURE_CONTAINER ||
-            structure.structureType == STRUCTURE_STORAGE
-          ) && structure.store.getFreeCapacity() > 0);
-        }
+          return (structure.structureType == STRUCTURE_CONTAINER || structure.structureType == STRUCTURE_STORAGE) && structure.store.getFreeCapacity() > 0;
+        },
       });
 
       if (targetsStores.length === 0) {
-          } else {
+      } else {
         closest_target = targetsStores[0];
       }
     }
@@ -301,34 +295,31 @@ var locator = {
 
     if (config.shouldRefuelTowers && !target) {
       target = locator.findRefuelTower(creep);
-      }
-   
+    }
+
     if (!target) {
       target = locator.findRefuelSpawn(creep);
-      }
+    }
 
     if (!target) {
       target = locator.findRefuelExtension(creep);
-      }
+    }
 
     return target;
   },
   findRefuelSpawn: function (creep) {
     var closest_target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
       filter: (structure) => {
-        return (
-          structure.structureType === STRUCTURE_SPAWN) && 
-          structure.energy < structure.energyCapacity;
-      }
+        return structure.structureType === STRUCTURE_SPAWN && structure.energy < structure.energyCapacity;
+      },
     });
     return closest_target;
   },
   findRefuelExtension: function (creep) {
     var closest_target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
       filter: (structure) => {
-        return structure.structureType === STRUCTURE_EXTENSION && 
-        structure.energy < structure.energyCapacity;
-      }
+        return structure.structureType === STRUCTURE_EXTENSION && structure.energy < structure.energyCapacity;
+      },
     });
     return closest_target;
   },
@@ -336,7 +327,7 @@ var locator = {
     var energyCreep = creep.store.energy;
 
     // var towers = creep.room.find(FIND_MY_STRUCTURES, {
-    //   filter: (structure) => { 
+    //   filter: (structure) => {
     //     return structure.structureType === STRUCTURE_TOWER;
     //   }
     // });
@@ -356,12 +347,11 @@ var locator = {
     var closest_target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
       filter: (structure) => {
         // if (structure.structureType === STRUCTURE_TOWER) {
-            // //
-        return structure.structureType === STRUCTURE_TOWER && 
-        structure.energy < structure.energyCapacity * 0.75;
+        // //
+        return structure.structureType === STRUCTURE_TOWER && structure.energy < structure.energyCapacity * 0.75;
         // }
         // return false;
-      }
+      },
     });
 
     return closest_target;
@@ -370,8 +360,56 @@ var locator = {
     var resource = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES);
     return resource;
   },
+  findSourcesWithEnergy: function (creep) {
+    const sources = Memory.colony.rooms[creep.room.name].sources;
+    let sourceWithEnergyAndClosest = undefined;
+    let distanceToClosestSource = 9999;
+
+    Object.keys(sources).forEach((idSource) => {
+      let source = Game.getObjectById(idSource);
+
+      if (source) {
+        const distanceToSource = util.distanceCheapestByPosition(creep.pos, source.pos);
+
+        if (source.energy > 0) {
+          if (!sourceWithEnergyAndClosest) {
+            sourceWithEnergyAndClosest = source;
+            distanceToClosestSource = distanceToSource;
+          } else {
+            if (distanceToSource < distanceToClosestSource) {
+              sourceWithEnergyAndClosest = source;
+              distanceToClosestSource = distanceToSource;
+            }
+          }
+        }
+      }
+    });
+
+    return sourceWithEnergyAndClosest;
+  },
   findSource: function (creep) {
     return creep.pos.findClosestByRange(FIND_SOURCES);
+  },
+  findDeposit: function (creep) {
+    const deposit = creep.room.find(FIND_MINERALS)[0];
+  
+    // console.log(`[findDeposit] ${JSON.stringify(deposit.mineralAmount)}`);
+
+    if (deposit && deposit.mineralAmount && this.hasExtractor(deposit)) {
+      return deposit;
+    }
+
+    return null;
+  },
+  hasExtractor: function(deposit) {
+    // console.log(`[hasExtractor] ${deposit}`);
+    if (!deposit) return false;
+
+    var structure = deposit.pos.lookFor(LOOK_STRUCTURES)[0];
+    
+    if (!structure) return false;
+
+    return (structure.structureType === STRUCTURE_EXTRACTOR);
   },
   findStorageOwnedClosest: function (nameRoom) {
     var storageClosest = null;
@@ -418,10 +456,21 @@ var locator = {
 
     return spawnClosest;
   },
+  findSpawnThatIsAvailableForSpawning: function(nameRoom) {
+    let spawnFoundForSpawning = null;
+
+    _.forIn(Game.spawns, (spawn, nameSpawn) => {
+      // console.log(`[locator.findSpawnThatIsAvailableForSpawning] spawn: ${spawn} nameRoom: ${nameRoom} ${spawn.room.name} ${spawn.room === nameRoom}`)
+      if (spawn.room.name === nameRoom && !spawn.spawning) spawnFoundForSpawning = spawn;
+    });
+
+    console.log(`[locator.findSpawnThatIsAvailableForSpawning] spawn: ${spawnFoundForSpawning} nameRoom: ${nameRoom}`)
+    return spawnFoundForSpawning;
+  },
   findTombstoneWithResources: function (creep) {
     var tombstone = creep.pos.findClosestByRange(FIND_TOMBSTONES);
 
     return tombstone;
   },
-}
+};
 module.exports = locator;

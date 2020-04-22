@@ -1,49 +1,57 @@
 var util = require('util');
 var locator = require('locator');
-var mc = require('util.memory.creep')
+var mc = require('util.memory.creep');
 var shared = {
   displayBadge: function (creep, characterBadge, size = '10px', color = '#00FF00', stroke = '#AA0000') {
     creep.room.visual.text(characterBadge, creep.pos, {
       color: color,
       font: size,
-      stroke: stroke
+      stroke: stroke,
     });
-  },  
-  transfer: function(creep, target) {
+  },
+  displayBadgeOld: function (creep, characterBadge, size = '10px', color = '#00FF00', stroke = '#AA0000') {
+    creep.room.visual.text(characterBadge, creep.pos, {
+      color: color,
+      font: size,
+      stroke: stroke,
+    });
+  },
+  displayBadgeNew: function (creep, badge) {
+    this.displayBadge(creep, badge.character, badge.size, badge.colorOfText, badge.colorOfStroke);
+  },
+  transfer: function (creep, target) {
     var typeResources = Object.keys(creep.store);
     return creep.transfer(target, typeResources[0]);
   },
-  depositResource: function(creep) {
-        container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+  depositResource: function (creep) {
+    container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
       filter: (structure) => {
-        return ((structure.structureType == STRUCTURE_TERMINAL || 
-          structure.structureType == STRUCTURE_STORAGE
-          ) && structure.store.getFreeCapacity() > 0);
-      }
+        return (structure.structureType == STRUCTURE_TERMINAL || structure.structureType == STRUCTURE_STORAGE) && structure.store.getFreeCapacity() > 0;
+      },
     });
 
     var idsInCreepStore = Object.keys(creep.store);
 
-    // deposit all in container 
+    // deposit all in container
     var resultTransfer = creep.transfer(container, idsInCreepStore[0]);
     if (resultTransfer !== 0 && resultTransfer !== ERR_NOT_IN_RANGE) {
-          }
+    }
     if (resultTransfer == ERR_NOT_IN_RANGE) {
       creep.moveTo(container, {
         visualizePathStyle: {
-          stroke: '#ffffff'
-        }
+          stroke: '#ffffff',
+        },
       });
     }
   },
-  checkShouldDeposit: function(creep) {
+  checkShouldDeposit: function (creep) {
     var idsInCreepStore = Object.keys(creep.store);
     if ((idsInCreepStore.length == 1 && idsInCreepStore[0] !== 'energy') || idsInCreepStore.length > 1) {
-            this.depositResource(creep);  
+      this.depositResource(creep);
       return true;
     }
 
-    return false;  
+    return false;
   },
   retrieveEnergy: function (creep) {
     var closest_energy = locator.findClosestStoreEnergy(creep);
@@ -55,14 +63,14 @@ var shared = {
     if (resultGather == ERR_NOT_IN_RANGE) {
       creep.moveTo(closest_energy, {
         visualizePathStyle: {
-          stroke: '#0000FF'
-        }
+          stroke: '#0000FF',
+        },
       });
     }
 
     return resultGather;
   },
-  upgradeController: function(creep) {
+  upgradeController: function (creep) {
     var roomSpawn = creep.room;
     var controller = roomSpawn.controller;
     var resultUpgrade = creep.upgradeController(controller);
@@ -70,13 +78,13 @@ var shared = {
     if (resultUpgrade == ERR_NOT_IN_RANGE) {
       creep.moveTo(roomSpawn.controller, {
         visualizePathStyle: {
-          stroke: '#00ff00'
-        }
+          stroke: '#00ff00',
+        },
       });
     }
   },
-  deliverResource: function(creep, target, typeResource, amount) {
-        // 
+  deliverResource: function (creep, target, typeResource, amount) {
+    //
     var targetObject = Game.getObjectById(target);
 
     if (creep.pos.isNearTo(targetObject)) {
@@ -85,12 +93,12 @@ var shared = {
     } else {
       creep.moveTo(targetObject, {
         visualizePathStyle: {
-            fill: 'transparent',
-            stroke: '#0000ff',
-            lineStyle: 'solid',
-            strokeWidth: .35,
-            opacity: .5
-        }
+          fill: 'transparent',
+          stroke: '#0000ff',
+          lineStyle: 'solid',
+          strokeWidth: 0.35,
+          opacity: 0.5,
+        },
       });
       return ERR_NOT_IN_RANGE;
     }
@@ -98,22 +106,21 @@ var shared = {
   depositResources: function (creep) {
     containers = creep.room.find(FIND_STRUCTURES, {
       filter: (structure) => {
-        return ((structure.structureType == STRUCTURE_STORAGE) && structure.store.getFreeCapacity() > 0);
-      }
+        return structure.structureType == STRUCTURE_STORAGE && structure.store.getFreeCapacity() > 0;
+      },
     });
     var idsInCreepStore = Object.keys(creep.store);
 
-    // deposit all in container 
+    // deposit all in container
     var resultTransfer = creep.transfer(containers[0], idsInCreepStore[0]);
     if (resultTransfer == ERR_NOT_IN_RANGE) {
       creep.moveTo(containers[0], {
         visualizePathStyle: {
-          stroke: '#ffffff'
-        }
+          stroke: '#ffffff',
+        },
       });
     }
     // move to container if the container isn't close enough
-
   },
   build: function (nameCreep) {
     var creep = Game.creeps[nameCreep];
@@ -126,19 +133,17 @@ var shared = {
       if (resultBuild == ERR_NOT_IN_RANGE) {
         creep.moveTo(target, {
           visualizePathStyle: {
-            stroke: '#ffffff'
-          }
+            stroke: '#ffffff',
+          },
         });
       }
 
       return resultBuild;
-
     } else {
       return null;
     }
   },
   gatherEnergy: function (creep, source) {
-        
     if (!creep || !source) return;
     var result;
     result = creep.harvest(source);
@@ -148,14 +153,14 @@ var shared = {
     }
 
     if (result === ERR_INVALID_TARGET || result === ERR_NO_BODYPART) {
-        if (source.store) {
-              var typeResources = Object.keys(source.store);
-              result = creep.withdraw(source, typeResources[0]);
-                      }
+      if (source.store) {
+        var typeResources = Object.keys(source.store);
+        result = creep.withdraw(source, typeResources[0]);
+      }
     }
 
     if (result !== OK && result !== ERR_NOT_IN_RANGE) {
-          }
+    }
 
     return result;
   },
@@ -165,7 +170,7 @@ var shared = {
       mc.setStage(nameCreep, 'recycle');
     }
   },
-  recycleStage: function(nameCreep) {
+  recycleStage: function (nameCreep) {
     var creep = Game.creeps[nameCreep];
     var spawnRenew = creep.pos.findClosestByPath(FIND_MY_SPAWNS);
 
@@ -181,20 +186,20 @@ var shared = {
     if (result === ERR_NOT_IN_RANGE) {
       result = creep.moveTo(spawnRenew, {
         visualizePathStyle: {
-          stroke: '#ffffff'
-        }
+          stroke: '#ffffff',
+        },
       });
       desc = `Move creep ${creep} to spawn ${spawnRenew}`;
     }
 
-    return { 
+    return {
       result: result,
       code: util.errorCodeToDisplay(result),
-      desc: desc
+      desc: desc,
     };
   },
   checkRenew: function (nameCreep, nameStageAfterRenew) {
-        // return;
+    // return;
     var creep = Game.creeps[nameCreep];
     // var spawnRenew = util.pickRandom(creep.room.find(FIND_MY_SPAWNS));
     var spawnRenew = creep.pos.findClosestByPath(FIND_MY_SPAWNS);
@@ -207,18 +212,17 @@ var shared = {
       this.displayBadge(creep, '💀');
 
       creep.transfer(spawnRenew, RESOURCE_ENERGY);
-
     }
 
-        if (mc.getStage(nameCreep) === 'renew') {
+    if (mc.getStage(nameCreep) === 'renew') {
       if (creep.ticksToLive > 1400 || spawnRenew.energy < 10 || spawnRenew.spawning) {
         mc.setStage(nameCreep, nameStageAfterRenew);
         return false;
       }
       creep.moveTo(spawnRenew, {
         visualizePathStyle: {
-          stroke: '#ffffff'
-        }
+          stroke: '#ffffff',
+        },
       });
       return true;
     }
@@ -226,18 +230,18 @@ var shared = {
     return false;
   },
   transferEnergyOrMoveTo: function (creep, target) {
-        var resultTransfer = creep.transfer(target, RESOURCE_ENERGY);
-        
+    var resultTransfer = creep.transfer(target, RESOURCE_ENERGY);
+
     if (resultTransfer !== OK && resultTransfer !== ERR_NOT_IN_RANGE) {
-          }
+    }
     if (resultTransfer == ERR_NOT_IN_RANGE) {
       creep.moveTo(target, {
         visualizePathStyle: {
-          stroke: '#ffffff'
-        }
+          stroke: '#ffffff',
+        },
       });
     }
-  }  
-}
+  },
+};
 
 module.exports = shared;

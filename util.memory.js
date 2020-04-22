@@ -12,6 +12,9 @@ var utilMemory = {
     return arrayMemory;
   },
   getObject: function(creep, keyMemory) {
+    if (creep.memory.um === undefined) { 
+      creep.memory.um = {};
+    };
     var object = Game.getObjectById(creep.memory.um[keyMemory]);
     
     if (object === null) {

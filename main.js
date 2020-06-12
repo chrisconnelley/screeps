@@ -12,6 +12,7 @@ module.exports.loop = function () {
   brainData.recordData(Memory.game, 'timeTick', Date.now(), 100);
 
   const timeGame = Game.time;
+  console.log();
   console.log(`Tick Start: ${timeGame}`);
   global.co = control;
   global.bm = brainMarket;
@@ -23,6 +24,8 @@ module.exports.loop = function () {
   brainCreeps.run();
   brainFlags.run();
 
-  console.log(`Tick End: ${timeGame}`);
+  var lengthTickInMs = parseInt(brainData.getAverageDiff(Memory.game, 'timeTick')/100)*100;
+
+  console.log(`Tick End: ${timeGame} ${lengthTickInMs/1000}s CPU Bucket: ${Game.cpu.bucket}/10000`);
     
 }

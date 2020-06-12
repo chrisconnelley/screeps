@@ -1,14 +1,19 @@
 var util = require('util');
 var shared = require('role.shared');
 var mc = require('util.memory.creep');
-var roleUpgrader = {
+var roleUpgrader = {  
+  badge: {
+    character: 'U',
+    colorOfText: '#FFFF00',
+    colorOfStroke: '#777700',
+    size: '10px'
+  },
   run: function (creep) {
-    // if (creep.pos.roomName !== 'E6N48' && Game.time % 5) return;
-    shared.displayBadge(creep, 'U');
+    shared.displayBadgeNew(creep, this.badge);
     var stage = mc.getStage(creep.name);
     if (shared.checkShouldDeposit(creep)) return;
     if (shared.checkRenew(creep.name, 'gathering', mc.setStage, mc.getStage)) return;
-    // if (shared.checkRecycle(creep.name, mc.getStage, mc.setStage)) return;
+
     if (stage == 'upgrading' && creep.carry.energy == 0) {
       mc.setStage(creep.name,'gathering');
     }
@@ -20,14 +25,15 @@ var roleUpgrader = {
     } else {
       shared.retrieveEnergy(creep);
     }
-  },
-  setStage(nameCreep, stage) {
-    var creep = Game.creeps[nameCreep];
-    utilMemory.remember(creep, 'stage', stage);
-  },
-  stage: function (nameCreep) {
-    var creep = Game.creeps[nameCreep];
-    return utilMemory.getString(creep, 'stage');
-  },
+  }
+//   ,
+//   setStage(nameCreep, stage) {
+//     var creep = Game.creeps[nameCreep];
+//     utilMemory.remember(creep, 'stage', stage);
+//   },
+//   stage: function (nameCreep) {
+//     var creep = Game.creeps[nameCreep];
+//     return utilMemory.getString(creep, 'stage');
+//   },
 };
 module.exports = roleUpgrader;

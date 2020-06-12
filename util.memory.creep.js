@@ -8,6 +8,14 @@ var memoryCreep = {
     var creep = Game.creeps[nameCreep];
     return um.getString(creep, 'stage');
   },
+  setTargetId: function(nameCreep, targetId) {
+    um.rememberN(nameCreep, 'targetId', targetId)  
+  },
+  getTargetId: function(nameCreep) {
+    const targetId = um.getStringN(nameCreep, 'targetId');
+    
+    return targetId ? targetId : "";
+  },
   getSource: function(nameCreep, isSecondary) {
     var key = isSecondary ? 'sourceB' : 'source';
     var creep = Game.creeps[nameCreep];

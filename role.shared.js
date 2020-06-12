@@ -172,7 +172,7 @@ var shared = {
   },
   recycleStage: function (nameCreep) {
     var creep = Game.creeps[nameCreep];
-    var spawnRenew = creep.pos.findClosestByPath(FIND_MY_SPAWNS);
+    var spawnRenew = util.pickRandom(creep.room.find(FIND_MY_SPAWNS));
 
     if (!creep || !spawnRenew) {
       return false;
@@ -241,6 +241,9 @@ var shared = {
         },
       });
     }
+    
+    return resultTransfer;
+    
   },
 };
 

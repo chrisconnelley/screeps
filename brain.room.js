@@ -12,9 +12,12 @@ const amountMaxUpgraderCost = 3200;
 
 var brainRoom = {
   checkController: function (nameRoom) {
+      
     if (Game.time % 2500 === 0) {
         brainMarket.emptyTerminal(nameRoom);
     }
+      
+    return;
       
     var memoryRoom = Memory.colony.rooms[nameRoom];
     var memoryController = memoryRoom.controller;

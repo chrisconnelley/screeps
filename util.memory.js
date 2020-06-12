@@ -40,6 +40,13 @@ var utilMemory = {
     };
     return creep.memory.um[keyMemory];
   },
+  getStringN: function(nameCreep, keyMemory) {
+    var creep = Game.creeps[nameCreep];
+    if (creep.memory.um === undefined) { 
+      creep.memory.um = {};
+    };
+    return creep.memory.um[keyMemory];
+  },
   hasMemory: function(creep, keyMemory) {
     if (creep.memory.um === undefined) { 
       creep.memory.um = {};
@@ -49,6 +56,14 @@ var utilMemory = {
     return valueMemory !== undefined;
   },
   remember: function(creep, keyMemory, valueMemory) {
+    if (creep.memory.um === undefined) { 
+      creep.memory.um = {};
+    }
+    creep.memory.um[keyMemory] = valueMemory;
+    return creep.memory.um[keyMemory];
+  },
+  rememberN: function(nameCreep, keyMemory, valueMemory) {
+    var creep = Game.creeps[nameCreep];
     if (creep.memory.um === undefined) { 
       creep.memory.um = {};
     }

@@ -2,6 +2,8 @@ var util = require('util');
 var mc = require('util.memory.creep');
 var config = require('config');
 
+const SPAWN_REFUEL_PERCENTAGE = 0.5;
+
 var locator = {
   getAmountDroppedEnergy: function (nameRoom) {
     return getAmountDroppedResources(nameRoom);
@@ -122,7 +124,7 @@ var locator = {
       var resourceLargestForCreep;
       for (var i = 0; i < resources.length; i++) {
         var resource = resources[i];
-        if (resource.amount > 200 && (!resourceLargestForCreep || resource.amount > resourceLargestForCreep.amount)) {
+        if (resource.amount > config.minimumDroppedResourceToConsider && (!resourceLargestForCreep || resource.amount > resourceLargestForCreep.amount)) {
           resourceLargestForCreep = resource;
         }
       }
@@ -160,14 +162,24 @@ var locator = {
     //   if (container) return container;
     // }
 
+    var closestResource = null;
+    var distanceToClosestResource = 999;
+    
     var resources = creep.room.find(FIND_DROPPED_RESOURCES);
     if (resources.length > 0) {
       for (var i = 0; i < resources.length; i++) {
         var resource = resources[i];
-        if (resource.amount > 100 && resource.resourceType === RESOURCE_ENERGY) {
-          return resource;
+        if (resource.amount > config.minimumDroppedResourceToConsider && resource.resourceType === RESOURCE_ENERGY) {
+          const distanceToResource = util.distanceCheapestByPosition(creep.pos, resource.pos);
+          
+          if (distanceToResource < distanceToClosestResource) {
+              closestResource = resource;
+              distanceToClosestResource = distanceToResource;
+          }
         }
       }
+      
+      if (closestResource) return closestResource;
     }
 
     var tombstones = creep.room.find(FIND_TOMBSTONES);
@@ -293,10 +305,6 @@ var locator = {
   findRefuelTarget: function (creep) {
     var target;
 
-    if (config.shouldRefuelTowers && !target) {
-      target = locator.findRefuelTower(creep);
-    }
-
     if (!target) {
       target = locator.findRefuelSpawn(creep);
     }
@@ -304,13 +312,17 @@ var locator = {
     if (!target) {
       target = locator.findRefuelExtension(creep);
     }
+    
+     if (config.shouldRefuelTowers && !target) {
+      target = locator.findRefuelTower(creep);
+    }
 
     return target;
   },
   findRefuelSpawn: function (creep) {
     var closest_target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
       filter: (structure) => {
-        return structure.structureType === STRUCTURE_SPAWN && structure.energy < structure.energyCapacity;
+        return structure.structureType === STRUCTURE_SPAWN && structure.energy < structure.energyCapacity * SPAWN_REFUEL_PERCENTAGE;
       },
     });
     return closest_target;

@@ -130,28 +130,36 @@ var control = {
 
     return nameCreep;
   },
-  sU: function (nameSpawn, energy, nameCreep) {
+   sU: function (nameSpawnorRoom, energy = 0) {
+    let spawn = this.resolveSpawn(nameSpawnorRoom);
+    if (!spawn) {
+      console.log(`Could not find spawn using ${nameSpawnorRoom}. Aborting.`);
+      return;
+    }
+
+    const role = 'upgrader';
+    const prefixNameCreep = 'U';
     const countPartsSectionTemplate = 4;
-    const costBodySectionTemplate = 100 + 50 + 50 + 50;
+    const costBodySectionTemplate = 100 + 50 + 50 +50;
+
+    if (!energy) {
+      energy = spawn.room.energyAvailable;
+      console.log(`Spawn ${spawn.name} using ${energy} to create ${role}`);
+    }
+
     var countParts = Math.floor(energy / costBodySectionTemplate);
     if (countParts * countPartsSectionTemplate > 50) {
       countParts = parseInt(50 / countPartsSectionTemplate);
     }
-
-    if (!nameCreep) {
-      nameCreep = 'U' + Game.time;
-    }
-
-    return this.spawnShort(
-      nameSpawn,
-      nameCreep,
-      {
+    const parts = {
         work: countParts,
         carry: countParts,
         move: countParts * 2,
-      },
-      'upgrader'
-    );
+      };
+    const nameCreep = prefixNameCreep + Game.time;
+    const result = this.spawnShort(spawn.name, nameCreep, parts, role);
+
+    return result !== OK || nameCreep;
   },
   sT: function (nameSpawn, energy) {
     var parts = Math.floor(energy / 250);
@@ -277,38 +285,33 @@ var control = {
       nameCreep: nameCreep,
     };
   },
-
-  sB: function (nameSpawnorRoom, energy) {
-    let spawn = this.resolveSpawn(nameSpawnorRoom);
-    if (!spawn) {
-      console.log(`Could not find spawn using ${nameSpawnorRoom}. Aborting.`);
-      return;
-    }
-
+    sB: function (nameSpawnOrRoom, energy) {
+    // Setup
     const role = 'builder';
     const prefixNameCreep = 'B';
     const countPartsSectionTemplate = 4;
     const costBodySectionTemplate = 100 + 50 + 50 + 50;
 
-    if (!energy) {
-      energy = spawn.room.energyAvailable;
-      console.log(`Spawn ${spawn.name} using ${energy} to create ${role}`);
+    // Shared Start
+    let spawn = this.resolveSpawn(nameSpawnOrRoom);
+    if (!spawn) {
+      console.log(`Could not find spawn using ${nameSpawnOrRoom}. Aborting.`);
+      return;
     }
 
-    var countParts = Math.floor(energy / costBodySectionTemplate);
-    if (countParts * countPartsSectionTemplate > 50) {
-      countParts = parseInt(50 / countPartsSectionTemplate);
-    }
+    energy = this.determineMaxEnergy(spawn, energy);
+    const countParts = this.calculatePartCount(energy, countPartsSectionTemplate, costBodySectionTemplate);
+    // Shared End
+
     const parts = {
       work: countParts,
       carry: countParts,
       move: countParts * 2,
     };
-    const nameCreep = prefixNameCreep + Game.time;
 
-    const result = this.spawnShort(spawn.name, nameCreep, parts, role);
+    const result = this.spawnShorter(spawn, prefixNameCreep, parts, role);
 
-    return result !== OK || nameCreep;
+    return result;
   },
   sH: function (nameSpawn, energy) {
     var parts = Math.floor(energy / 250);

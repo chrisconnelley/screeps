@@ -17,6 +17,8 @@ var brainMarket = {
         const orders = this.getOrders(RESOURCE_ENERGY);
         const energyInTerminal = terminal.store.getUsedCapacity(RESOURCE_ENERGY);
         
+        if (energyInTerminal < 1) return;
+        
         orders.forEach((order) => {
             order.transactionCost = Game.market.calcTransactionCost(order.amount, order.roomName, nameRoom);
             order.transactionFactor = order.transactionCost / order.amount;
@@ -32,10 +34,12 @@ var brainMarket = {
         
         orders.sort(sortProfitFunc);
 
-        
-        var result = Game.market.deal(orders[0].id, orders[0].transmitAmount, nameRoom);
+        const selectedOrder = orders[0];
+        if (selectedOrder.transmitAmount < 1) return;
 
-        console.log(`${nameRoom} submitted deal ${orders[0].id} for ${orders[0].transmitAmount} energy : result of ${result}`);
+        var result = Game.market.deal(selectedOrder.id, selectedOrder.transmitAmount, nameRoom);
+
+        console.log(`${nameRoom} (${energyInTerminal}) submitted deal ${selectedOrder.id} for ${selectedOrder.transmitAmount} energy : result of ${result}`);
     },
     emptyAll: function() {
         Object.keys(Game.rooms).forEach((nameRoom) => {

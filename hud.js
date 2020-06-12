@@ -45,6 +45,7 @@ var hud = {
 
     var numberLine = 0;
     status.forEach((statusLine) => {
+    //   console.log(statusLine);
       room.visual.text(statusLine, 2, 2+(numberLine++), {
         color: '#FFFFFF',
         font: '12px',

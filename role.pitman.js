@@ -23,7 +23,7 @@ var rolePitman = {
 
     if (!depositCurrent) {
       // Find new energy deposit
-      console.log(`Pitman ${creep.name} needs to find a new energy deposit`);
+    //   console.log(`Pitman ${creep.name} needs to find a new energy deposit`);
       creep.say('LF deposit');
 
       const depositNew = locator.findSourcesWithEnergy(creep);
@@ -60,7 +60,7 @@ var rolePitman = {
     }
 
     if (resultHarvest !== OK) {
-      console.log(`result of Pitman harvest: ${resultHarvest}`);
+    //   console.log(`result of Pitman harvest: ${resultHarvest}`);
     
       if (resultHarvest === ERR_NOT_ENOUGH_ENERGY) {
         um.forget(creep, 'deposit');

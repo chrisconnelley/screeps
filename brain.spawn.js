@@ -59,7 +59,7 @@ var brainSpawn = {
       creeps.sort(sortTTL);
 
       var resultRenew = spawn.renewCreep(creeps[0]);
-      console.log(`Spawn ${spawn.name} renewing ${creeps[0].name} `);
+    //   console.log(`Spawn ${spawn.name} renewing ${creeps[0].name} `);
     }
   },
   recycleCreeps: function(spawn) {

@@ -2,11 +2,12 @@ var config = require('config');
 
 const amountRepairMax = 0.8; // 90% of max
 const amountWallHPDesired = 10000;
+const amountAct = 0.5;
 
 var towers = {
-  run: function(nameSpawn) {
+  run: function(nameRoom) {
     // Find all towers in spawn room and command them
-    var roomSpawn = Game.spawns[nameSpawn].room;
+    var roomSpawn = Game.rooms[nameRoom];
     var towers = roomSpawn.find(FIND_MY_STRUCTURES, {
       filter: (structure) => {
         return (structure.structureType == STRUCTURE_TOWER) && structure.energy > 0;
@@ -17,8 +18,8 @@ var towers = {
     {
         var hasSuccessfullyActed = this.towerAttack(tower) == OK || this.towerHeal(tower) == OK;
        
-      if (config.areTowersActive && !hasSuccessfullyActed && (tower.store.energy > (tower.store.getCapacity(RESOURCE_ENERGY) * 0.5))) {        
-        this.towerRepairRamparts(tower) == OK ||
+      if (config.areTowersActive && !hasSuccessfullyActed && (tower.store.energy > (tower.store.getCapacity(RESOURCE_ENERGY) * amountAct))) {        
+        this.towerRepairRamparts(tower) === OK ||
         this.towerRepairWalls(tower) == OK ||
         this.towerRepairContainers(tower) == OK
       }

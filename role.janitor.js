@@ -47,7 +47,7 @@ var roleJanitor = {
       }
   },
   deliver: function(creep) {
-    if (creep.store.getUsedCapacity() === 0) {
+    if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
       mc.setStage(creep.name, 'clean');
       return;
     }

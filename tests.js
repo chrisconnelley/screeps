@@ -166,6 +166,7 @@ var tests = {
   },
   test_brainTasks_createTask: function() {
     const name = `test_brainTasks_createTask`;
+    console.log('brainTasks_createTask test');
 
     const tests = [
       {
